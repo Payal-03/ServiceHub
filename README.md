@@ -64,7 +64,7 @@ ServiceHub is an on-demand local service marketplace connecting homeowners with 
 ```bash
 # Clone the repository
 git clone https://github.com/Payal-03/MINIproject.git
-cd MINIproject
+cd ServiceHub
 
 # Install dependencies
 npm install
