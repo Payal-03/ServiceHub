@@ -605,3 +605,7 @@ export const adminService = {
     };
   }
 };
+
+// Export new job request & pricing services
+export { jobRequestService } from './jobRequestService';
+export { calculateServiceEstimate } from './pricingService';

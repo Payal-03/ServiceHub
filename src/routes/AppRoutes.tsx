@@ -20,6 +20,8 @@ const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage')
 
 // Lazy-loaded Customer Pages
 const CustomerDashboardPage = lazy(() => import('../pages/customer/CustomerDashboardPage').then(m => ({ default: m.CustomerDashboardPage })));
+const CustomerRequestsPage = lazy(() => import('../pages/customer/CustomerRequestsPage').then(m => ({ default: m.CustomerRequestsPage })));
+const CustomerRequestDetailsPage = lazy(() => import('../pages/customer/CustomerRequestDetailsPage').then(m => ({ default: m.CustomerRequestDetailsPage })));
 const ServiceDiscoveryPage = lazy(() => import('../pages/customer/ServiceDiscoveryPage').then(m => ({ default: m.ServiceDiscoveryPage })));
 const ProviderProfilePage = lazy(() => import('../pages/customer/ProviderProfilePage').then(m => ({ default: m.ProviderProfilePage })));
 const BookServicePage = lazy(() => import('../pages/customer/BookServicePage').then(m => ({ default: m.BookServicePage })));
@@ -91,12 +93,15 @@ export const AppRoutes: React.FC = () => {
         >
           <Route index element={<Navigate to="/customer/dashboard" replace />} />
           <Route path="dashboard" element={<CustomerDashboardPage />} />
+          <Route path="requests" element={<CustomerRequestsPage />} />
+          <Route path="requests/:id" element={<CustomerRequestDetailsPage />} />
+          <Route path="post-request" element={<BookServicePage />} />
           <Route path="services" element={<ServiceDiscoveryPage />} />
           <Route path="providers" element={<ServiceDiscoveryPage />} />
           <Route path="providers/:id" element={<ProviderProfilePage />} />
           <Route path="book-service" element={<BookServicePage />} />
           <Route path="book-service/:providerId" element={<BookServicePage />} />
-          <Route path="bookings" element={<CustomerBookingsPage />} />
+          <Route path="bookings" element={<CustomerRequestsPage />} />
           <Route path="bookings/:id" element={<BookingDetailsPage />} />
           <Route path="payments" element={<CustomerPaymentsPage />} />
           <Route path="reviews" element={<CustomerReviewsPage />} />

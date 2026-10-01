@@ -34,26 +34,19 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
   const customerNav = [
-    { label: 'Dashboard', path: '/customer/dashboard', icon: LayoutDashboard },
-    { label: 'Find Services', path: '/customer/services', icon: Search },
-    { label: 'My Bookings', path: '/customer/bookings', icon: CalendarCheck2 },
-    { label: 'Payments', path: '/customer/payments', icon: CreditCard },
-    { label: 'My Reviews', path: '/customer/reviews', icon: Star },
+    { label: 'Home', path: '/customer/dashboard', icon: LayoutDashboard },
+    { label: 'My Requests', path: '/customer/requests', icon: Inbox },
+    { label: 'Active Job', path: '/customer/requests?tab=ongoing', icon: Clock },
+    { label: 'Completed', path: '/customer/requests?tab=completed', icon: CalendarCheck2 },
     { label: 'Profile', path: '/customer/profile', icon: User },
-    { label: 'Settings', path: '/customer/settings', icon: Settings },
   ];
 
   const providerNav = [
     { label: 'Dashboard', path: '/provider/dashboard', icon: LayoutDashboard },
-    { label: 'Incoming Requests', path: '/provider/requests', icon: Inbox },
-    { label: 'All Bookings', path: '/provider/bookings', icon: CalendarCheck2 },
-    { label: 'Offered Services', path: '/provider/services', icon: Briefcase },
-    { label: 'Weekly Availability', path: '/provider/availability', icon: Clock },
-    { label: 'Service Areas', path: '/provider/service-areas', icon: MapPin },
-    { label: 'Earnings & Payouts', path: '/provider/earnings', icon: TrendingUp },
-    { label: 'Customer Reviews', path: '/provider/reviews', icon: Star },
-    { label: 'Provider Profile', path: '/provider/profile', icon: User },
-    { label: 'Settings', path: '/provider/settings', icon: Settings },
+    { label: 'Job Requests', path: '/provider/requests', icon: Inbox },
+    { label: 'My Jobs', path: '/provider/bookings', icon: CalendarCheck2 },
+    { label: 'Completed', path: '/provider/bookings?tab=completed', icon: Clock },
+    { label: 'Profile', path: '/provider/profile', icon: User },
   ];
 
   const adminNav = [
@@ -102,8 +95,35 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
 
+          {/* Primary CTA Button (Section 12) */}
+          <div className="p-4 pb-2">
+            {role === 'CUSTOMER' && (
+              <button
+                onClick={() => {
+                  navigate('/customer/book-service');
+                  onClose();
+                }}
+                className="w-full py-2.5 px-3.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs shadow-md shadow-primary-600/20 flex items-center justify-center gap-2 transition-all"
+              >
+                <span>+ Post Request</span>
+              </button>
+            )}
+
+            {role === 'PROVIDER' && (
+              <button
+                onClick={() => {
+                  navigate('/provider/requests');
+                  onClose();
+                }}
+                className="w-full py-2.5 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-all"
+              >
+                <span>View Available Requests</span>
+              </button>
+            )}
+          </div>
+
           {/* Nav List */}
-          <nav className="p-4 space-y-1">
+          <nav className="p-4 pt-1 space-y-1">
             <div className="px-3 pb-2 text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
               Navigation
             </div>

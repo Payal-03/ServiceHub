@@ -18,16 +18,15 @@ export const MobileBottomNav: React.FC = () => {
 
   const customerTabs = [
     { label: 'Home', path: '/customer/dashboard', icon: LayoutDashboard },
-    { label: 'Services', path: '/customer/services', icon: Search },
-    { label: 'Bookings', path: '/customer/bookings', icon: CalendarCheck2 },
+    { label: 'My Requests', path: '/customer/requests', icon: Inbox },
+    { label: 'Active', path: '/customer/requests?tab=ongoing', icon: Clock },
     { label: 'Profile', path: '/customer/profile', icon: User },
   ];
 
   const providerTabs = [
     { label: 'Dashboard', path: '/provider/dashboard', icon: LayoutDashboard },
     { label: 'Requests', path: '/provider/requests', icon: Inbox },
-    { label: 'Bookings', path: '/provider/bookings', icon: CalendarCheck2 },
-    { label: 'Schedule', path: '/provider/availability', icon: Clock },
+    { label: 'My Jobs', path: '/provider/bookings', icon: CalendarCheck2 },
     { label: 'Profile', path: '/provider/profile', icon: User },
   ];
 

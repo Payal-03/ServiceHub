@@ -192,6 +192,25 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({ onToggleSidebar, isSidebar
             )}
           </div>
 
+          {/* Primary Action Buttons (Section 12) */}
+          {role === 'CUSTOMER' && (
+            <button
+              onClick={() => navigate('/customer/book-service')}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs shadow-xs transition-all"
+            >
+              <span>+ Post Request</span>
+            </button>
+          )}
+
+          {role === 'PROVIDER' && (
+            <button
+              onClick={() => navigate('/provider/requests')}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs shadow-xs transition-all"
+            >
+              <span>View Requests</span>
+            </button>
+          )}
+
           {user ? (
             <>
               {/* Notifications */}

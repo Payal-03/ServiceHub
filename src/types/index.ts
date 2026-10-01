@@ -207,3 +207,76 @@ export interface ProviderFilters {
   sortBy?: 'recommended' | 'rating' | 'price_asc' | 'price_desc';
   search?: string;
 }
+
+export type JobRequestStatus =
+  | 'POSTED'
+  | 'PROVIDER_INTERESTED'
+  | 'PROVIDER_ACCEPTED'
+  | 'IN_PROGRESS'
+  | 'PROVIDER_MARKED_COMPLETE'
+  | 'CUSTOMER_CONFIRMED_COMPLETE'
+  | 'COMPLETED'
+  | 'CANCELLED';
+
+export interface InterestedProvider {
+  providerId: string;
+  providerName: string;
+  providerPhone: string;
+  providerEmail?: string;
+  providerAvatar?: string;
+  providerRating: number;
+  providerJobCount: number;
+  providerExperienceYears: number;
+  verified: boolean;
+  primaryCategory: string;
+  expressedAt: string;
+  note?: string;
+  quotedAmount?: number;
+  distanceEstimate?: string;
+}
+
+export interface JobRequest {
+  id: string;
+  requestNumber: string;
+  customerId: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  customerAvatar?: string;
+  serviceCategory: string;
+  serviceCategoryId: string;
+  serviceType: string;
+  description: string;
+  city: string;
+  locality: string;
+  pincode: string;
+  addressDetails?: string;
+  preferredDate: string;
+  preferredTime: string;
+  budget: number;
+  estimatedMin: number;
+  estimatedMax: number;
+  notes?: string;
+  photoUrl?: string;
+  status: JobRequestStatus;
+  createdAt: string;
+  updatedAt: string;
+  interestedProviders: InterestedProvider[];
+  acceptedProviderId?: string;
+  acceptedProvider?: {
+    id: string;
+    name: string;
+    phone: string;
+    avatar?: string;
+    rating: number;
+    jobCount: number;
+    verified: boolean;
+  };
+  providerCompleted: boolean;
+  providerCompletedAt?: string;
+  customerConfirmed: boolean;
+  customerConfirmedAt?: string;
+  completedAt?: string;
+  cancellationReason?: string;
+  cancelledBy?: UserRole;
+}
