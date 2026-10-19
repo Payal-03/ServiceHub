@@ -19,7 +19,6 @@ interface AuthContextType {
   }) => Promise<User>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<User>;
-  quickSwitchRole: (role: UserRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -111,20 +110,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return updated;
   };
 
-  const quickSwitchRole = (targetRole: UserRole) => {
-    if (!DEMO_MODE) return;
-    const users = MockStorage.getUsers();
-    let target = users.find(u => u.role === targetRole && u.status === 'ACTIVE');
-    if (!target) {
-      target = users[0];
-    }
-    const mockToken = `jwt-token-${target.id}-switch`;
-    localStorage.setItem('sh_auth_token_v1', mockToken);
-    localStorage.setItem('sh_active_user_v1', JSON.stringify(target));
-    setToken(mockToken);
-    setUser(target);
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -137,7 +122,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         logout,
         updateProfile,
-        quickSwitchRole,
       }}
     >
       {children}

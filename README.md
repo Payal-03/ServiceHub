@@ -71,7 +71,7 @@ Set `VITE_API_BASE_URL` to point at a real backend. The app expects `http://loca
 
 ## Demo Personas
 
-Use the login page buttons or the role selector in the top navigation bar.
+Enter one of the demo account emails below on the sign-in page. To use another role, sign out and sign in with that role's account.
 
 | Persona | Email | Password | Role |
 | :--- | :--- | :--- | :--- |

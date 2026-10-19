@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, Zap, Lock, Mail, AlertCircle, ArrowRight, ShieldCheck, UserCheck } from 'lucide-react';
+import { Eye, EyeOff, Zap, Lock, Mail, AlertCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Button } from '../../components/ui/Button';
-import { DEMO_MODE } from '../../services/api';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -12,8 +11,8 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [email, setEmail] = useState(DEMO_MODE ? 'customer@servicehub.com' : '');
-  const [password, setPassword] = useState(DEMO_MODE ? 'password123' : '');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,12 +49,6 @@ export const LoginPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleDemoSelect = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword('password123');
-    setErrorMessage(null);
   };
 
   return (
@@ -163,53 +156,6 @@ export const LoginPage: React.FC = () => {
               </Button>
             </div>
           </form>
-
-          {/* Quick Demo Credentials Switcher */}
-          {DEMO_MODE && <div className="mt-6 pt-6 border-t border-neutral-100">
-            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block text-center mb-3">
-              One-Click Demo Credentials
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleDemoSelect('customer@servicehub.com')}
-                className={`p-2 rounded-xl border text-center transition-all ${
-                  email === 'customer@servicehub.com'
-                    ? 'border-primary-500 bg-primary-50/50 text-primary-700 font-bold'
-                    : 'border-neutral-200 hover:bg-neutral-50 text-neutral-700'
-                }`}
-              >
-                <span className="text-[11px] block">Customer</span>
-                <span className="text-[9px] text-neutral-400">Payal</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoSelect('provider@servicehub.com')}
-                className={`p-2 rounded-xl border text-center transition-all ${
-                  email === 'provider@servicehub.com'
-                    ? 'border-primary-500 bg-primary-50/50 text-primary-700 font-bold'
-                    : 'border-neutral-200 hover:bg-neutral-50 text-neutral-700'
-                }`}
-              >
-                <span className="text-[11px] block">Electrician</span>
-                <span className="text-[9px] text-neutral-400">Raj Kumar</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoSelect('admin@servicehub.com')}
-                className={`p-2 rounded-xl border text-center transition-all ${
-                  email === 'admin@servicehub.com'
-                    ? 'border-primary-500 bg-primary-50/50 text-primary-700 font-bold'
-                    : 'border-neutral-200 hover:bg-neutral-50 text-neutral-700'
-                }`}
-              >
-                <span className="text-[11px] block">Admin</span>
-                <span className="text-[9px] text-neutral-400">Ayush</span>
-              </button>
-            </div>
-          </div>}
 
           <div className="mt-6 text-center text-xs text-neutral-500">
             Don't have an account?{' '}
