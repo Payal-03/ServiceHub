@@ -1,33 +1,52 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, IndianRupee, MapPin, AlertCircle, ChevronRight } from 'lucide-react';
+import { Briefcase, IndianRupee, MapPin, AlertCircle, ChevronRight, XCircle } from 'lucide-react';
 import { requestApi } from '../../services/api';
 import { ServiceRequest, RequestStatus } from '../../types';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { useToast } from '../../context/ToastContext';
 
 export const ElectricianMyJobsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
+
+  const load = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await requestApi.getMyRequests();
+      setRequests(data);
+    } catch (err: any) {
+      console.error(err);
+      setError('Could not load your job history. Please make sure the backend is running.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await requestApi.getMyRequests();
-        setRequests(data);
-      } catch (err: any) {
-        console.error(err);
-        setError('Could not load your job history. Please make sure the backend is running.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
     load();
   }, []);
+
+  const handleWithdraw = async (e: React.MouseEvent, jobId: string) => {
+    e.stopPropagation(); // prevent card navigation
+    if (!confirm('Withdraw your bid for this job?')) return;
+    setWithdrawingId(jobId);
+    try {
+      await requestApi.withdrawInterest(jobId);
+      showToast('Your bid has been withdrawn.', 'info');
+      await load(); // refresh list
+    } catch (err: any) {
+      showToast(err.response?.data?.message || 'Failed to withdraw bid.', 'error');
+    } finally {
+      setWithdrawingId(null);
+    }
+  };
 
   const getStatusBadge = (status: RequestStatus) => {
     switch (status) {
@@ -48,7 +67,7 @@ export const ElectricianMyJobsPage: React.FC = () => {
     <div className="space-y-6 py-6 max-w-5xl mx-auto">
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900">
-          My Bids & Assigned Jobs
+          My Bids &amp; Assigned Jobs
         </h1>
         <p className="text-sm text-neutral-500">
           Track the status of jobs you have quoted on or have been hired to complete.
@@ -102,9 +121,22 @@ export const ElectricianMyJobsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center sm:border-l sm:border-neutral-100 sm:pl-4">
+              <div className="flex items-center gap-3 sm:border-l sm:border-neutral-100 sm:pl-4">
+                {/* Withdraw button — only on OPEN bids */}
+                {job.status === 'OPEN' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    isLoading={withdrawingId === job.id}
+                    onClick={(e) => handleWithdraw(e, job.id)}
+                    className="text-rose-600 border-rose-200 hover:bg-rose-50"
+                    leftIcon={<XCircle className="w-4 h-4" />}
+                  >
+                    Withdraw
+                  </Button>
+                )}
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600">
-                  Manage Job <ChevronRight className="w-4 h-4" />
+                  View <ChevronRight className="w-4 h-4" />
                 </span>
               </div>
             </div>

@@ -206,11 +206,16 @@ export const RequestDetailsPage: React.FC = () => {
   }
 
   const isCustomerOwner = user && String(user.id) === String(request.customerId);
+  // Match by email because user.id is the userId but interest.electricianId
+  // is the electrician_profile id — they are different numbers.
   const myExistingBid = request.interestedProviders?.find(
-    (p) => user && String(p.electricianId) === String(user.id)
+    (p) => user && p.electricianEmail === user.email
   );
+  // selectedElectricianId is the profile id, not userId — match by email instead
   const isSelectedElectrician =
-    user && request.selectedElectricianId && String(request.selectedElectricianId) === String(user.id);
+    user && request.selectedElectrician &&
+    String(request.selectedElectricianId) !== '' &&
+    (request.selectedElectrician as any).email === user.email;
 
   const getStatusBadge = (status: RequestStatus) => {
     switch (status) {

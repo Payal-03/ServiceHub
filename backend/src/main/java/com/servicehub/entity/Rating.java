@@ -27,6 +27,7 @@ public class Rating {
     private User revieweeUser;
 
     @Column(name = "score", nullable = false)
+    @org.hibernate.annotations.JdbcTypeCode(java.sql.Types.TINYINT)
     private Integer score;
 
     @Column(name = "review", length = 500)

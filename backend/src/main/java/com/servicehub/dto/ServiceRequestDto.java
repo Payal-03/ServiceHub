@@ -50,16 +50,18 @@ public class ServiceRequestDto {
         private String id;
         private String name;
         private String phone;
+        private String email;
         private Double rating;
         private Integer experienceYears;
 
         public ElectricianSummaryDto() {
         }
 
-        public ElectricianSummaryDto(String id, String name, String phone, Double rating, Integer experienceYears) {
+        public ElectricianSummaryDto(String id, String name, String phone, String email, Double rating, Integer experienceYears) {
             this.id = id;
             this.name = name;
             this.phone = phone;
+            this.email = email;
             this.rating = rating != null ? rating : 5.0;
             this.experienceYears = experienceYears;
         }
@@ -86,6 +88,14 @@ public class ServiceRequestDto {
 
         public void setPhone(String phone) {
             this.phone = phone;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
         }
 
         public Double getRating() {

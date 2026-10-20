@@ -101,6 +101,21 @@ public class ServiceRequestService {
     }
 
     /**
+     * 2b. Electrician views all requests they have bid on (via their interests).
+     */
+    public List<ServiceRequestDto> getElectricianRequests(Long currentUserId) {
+        ElectricianProfile electrician = electricianProfileRepository.findByUser_UserId(currentUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Electrician profile not found for user ID: " + currentUserId));
+
+        List<RequestInterest> interests = requestInterestRepository
+                .findByElectrician_ElectricianIdOrderByCreatedAtDesc(electrician.getElectricianId());
+
+        return interests.stream()
+                .map(i -> mapToDto(i.getRequest()))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 3. View single request with interests.
      */
     public ServiceRequestDto getRequestById(Long requestId) {
@@ -367,6 +382,7 @@ public class ServiceRequestService {
                     String.valueOf(req.getSelectedElectrician().getElectricianId()),
                     req.getSelectedElectrician().getUser().getFullName(),
                     req.getSelectedElectrician().getUser().getPhone(),
+                    req.getSelectedElectrician().getUser().getEmail(),
                     avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 5.0,
                     req.getSelectedElectrician().getExperienceYears()
             );

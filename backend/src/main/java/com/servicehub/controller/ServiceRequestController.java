@@ -41,12 +41,19 @@ public class ServiceRequestController {
     }
 
     /**
-     * Customer views their own requests.
+     * Role-aware "my requests" endpoint.
+     * - CUSTOMER: returns requests they posted.
+     * - ELECTRICIAN: returns requests they have bid on.
      */
     @GetMapping("/my")
-    public ResponseEntity<List<ServiceRequestDto>> getCustomerRequests(Principal principal) {
+    public ResponseEntity<List<ServiceRequestDto>> getMyRequests(Principal principal) {
         User user = authService.getUserByEmail(principal.getName());
-        List<ServiceRequestDto> requests = serviceRequestService.getCustomerRequests(user.getUserId());
+        List<ServiceRequestDto> requests;
+        if (user.getRole() != null && user.getRole().name().equals("ELECTRICIAN")) {
+            requests = serviceRequestService.getElectricianRequests(user.getUserId());
+        } else {
+            requests = serviceRequestService.getCustomerRequests(user.getUserId());
+        }
         return ResponseEntity.ok(requests);
     }
 
