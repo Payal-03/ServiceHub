@@ -12,6 +12,7 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { CustomerRequestsPage } from './pages/customer/CustomerRequestsPage';
 import { CreateRequestPage } from './pages/customer/CreateRequestPage';
+import { CustomerProfilePage } from './pages/customer/CustomerProfilePage';
 import { ElectricianJobsPage } from './pages/electrician/ElectricianJobsPage';
 import { ElectricianMyJobsPage } from './pages/electrician/ElectricianMyJobsPage';
 import { ElectricianProfilePage } from './pages/electrician/ElectricianProfilePage';
@@ -45,6 +46,14 @@ export function App() {
                   element={
                     <ProtectedRoute allowedRole="CUSTOMER">
                       <CreateRequestPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/customer/profile"
+                  element={
+                    <ProtectedRoute allowedRole="CUSTOMER">
+                      <CustomerProfilePage />
                     </ProtectedRoute>
                   }
                 />

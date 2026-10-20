@@ -18,10 +18,13 @@ public class RatingController {
 
     private final RatingService ratingService;
     private final AuthService authService;
+    private final com.servicehub.repository.RatingRepository ratingRepository;
 
-    public RatingController(RatingService ratingService, AuthService authService) {
+    public RatingController(RatingService ratingService, AuthService authService,
+                            com.servicehub.repository.RatingRepository ratingRepository) {
         this.ratingService = ratingService;
         this.authService = authService;
+        this.ratingRepository = ratingRepository;
     }
 
     /**
@@ -34,6 +37,30 @@ public class RatingController {
         User user = authService.getUserByEmail(principal.getName());
         RatingDto created = ratingService.createRating(dto, user.getUserId());
         return new ResponseEntity<>(created, HttpStatus.CREATED);
+    }
+
+    /**
+     * Get all ratings received by the currently authenticated user.
+     * Returns a map with: ratings (list), averageScore, totalCount, userName.
+     */
+    @GetMapping("/api/ratings/my")
+    public ResponseEntity<java.util.Map<String, Object>> getMyRatings(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = authService.getUserByEmail(principal.getName());
+        List<RatingDto> ratings = ratingService.getRatingsByUserId(user.getUserId());
+        Double avgScore = ratingRepository.calculateAverageScoreByUserId(user.getUserId());
+        long totalCount = ratingRepository.countByRevieweeUser_UserId(user.getUserId());
+
+        java.util.Map<String, Object> result = new java.util.LinkedHashMap<>();
+        result.put("ratings", ratings);
+        result.put("averageScore", avgScore != null ? Math.round(avgScore * 10.0) / 10.0 : null);
+        result.put("totalCount", totalCount);
+        result.put("userName", user.getFullName());
+        result.put("userEmail", user.getEmail());
+        result.put("userRole", user.getRole().name());
+        return ResponseEntity.ok(result);
     }
 
     /**

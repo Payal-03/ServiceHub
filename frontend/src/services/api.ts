@@ -2,6 +2,7 @@ import axios from 'axios';
 import {
   AuthResponse,
   Category,
+  CustomerProfile,
   ElectricianProfile,
   Rating,
   Role,
@@ -168,4 +169,36 @@ export const ratingApi = {
     const res = await apiClient.get<Rating[]>(`/ratings/electrician/${electricianId}`);
     return res.data;
   },
+
+  getMyRatings: async (): Promise<{
+    ratings: Rating[];
+    averageScore: number | null;
+    totalCount: number;
+    userName: string;
+    userEmail: string;
+    userRole: string;
+  }> => {
+    const res = await apiClient.get('/ratings/my');
+    return res.data;
+  },
 };
+
+// 6. Customer Profile API
+export const customerApi = {
+  getProfile: async (): Promise<CustomerProfile> => {
+    const res = await apiClient.get<CustomerProfile>('/customers/me');
+    return res.data;
+  },
+
+  updateProfile: async (data: {
+    fullName?: string;
+    phone?: string;
+    defaultCity?: string;
+    defaultLocality?: string;
+    defaultAddress?: string;
+  }): Promise<CustomerProfile> => {
+    const res = await apiClient.put<CustomerProfile>('/customers/me', data);
+    return res.data;
+  },
+};
+

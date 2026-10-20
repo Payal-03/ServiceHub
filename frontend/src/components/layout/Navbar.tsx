@@ -38,6 +38,9 @@ export const Navbar: React.FC = () => {
               <Link to="/customer/requests" className="hover:text-primary-600 transition-colors flex items-center gap-1.5">
                 <FileText className="w-4 h-4" /> My Requests
               </Link>
+              <Link to="/customer/profile" className="hover:text-primary-600 transition-colors flex items-center gap-1.5">
+                <UserIcon className="w-4 h-4" /> My Profile
+              </Link>
               <Link to="/customer/create-request" className="hover:text-primary-600 transition-colors flex items-center gap-1.5 text-primary-600 font-semibold">
                 <PlusCircle className="w-4 h-4" /> Post a Job
               </Link>
@@ -63,12 +66,16 @@ export const Navbar: React.FC = () => {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-sm bg-neutral-100 px-3 py-1.5 rounded-full border border-neutral-200">
+              <Link
+                to={role === 'CUSTOMER' ? '/customer/profile' : '/electrician/profile'}
+                className="flex items-center gap-2 text-sm bg-neutral-100 hover:bg-neutral-200/80 transition-colors px-3 py-1.5 rounded-full border border-neutral-200"
+                title="View your profile"
+              >
                 <span className="font-semibold text-neutral-800">{user.name}</span>
                 <span className="text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-primary-100 text-primary-700">
                   {role}
                 </span>
-              </div>
+              </Link>
               <Button
                 variant="outline"
                 size="sm"
@@ -129,6 +136,13 @@ export const Navbar: React.FC = () => {
                 className="block py-2 text-base font-medium text-neutral-700 hover:text-primary-600"
               >
                 My Requests
+              </Link>
+              <Link
+                to="/customer/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 text-base font-medium text-neutral-700 hover:text-primary-600"
+              >
+                My Profile & Ratings
               </Link>
               <Link
                 to="/customer/create-request"

@@ -108,3 +108,20 @@ export interface Rating {
   review: string;
   createdAt: string;
 }
+
+export interface CustomerProfile {
+  customerId: number;
+  userId: number;
+  fullName: string;
+  email: string;
+  phone?: string;
+  defaultCity?: string;
+  defaultLocality?: string;
+  defaultAddress?: string;
+  memberSince?: string;
+  averageRating?: number | null;
+  totalRatingsCount: number;
+  totalRequestsCount: number;
+  ratings: Rating[];
+}
+
