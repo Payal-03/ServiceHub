@@ -271,13 +271,3 @@ You can register new accounts on the registration page, or sign in using these d
 
 ---
 
-## 8. Development Timeline (Oct 1 – Oct 19)
-
-- **Oct 1**: Database schema design, 7-table normalization, and initial `schema.sql` definition.
-- **Oct 4**: Spring Boot security architecture, BCrypt password hashing, and JWT token authentication.
-- **Oct 7**: Service category catalog and electrician profile management REST APIs.
-- **Oct 10**: Service request lifecycle, bidding engine, and interest status state machine.
-- **Oct 13**: Two-sided completion confirmation logic and mutual star rating system.
-- **Oct 16**: Backend integration testing, input bean validation, and global exception handling.
-- **Oct 18**: Frontend modernization with React, Vite, Tailwind CSS, and direct Axios API integration.
-- **Oct 19**: Full-stack end-to-end integration, route protections, and comprehensive documentation.
