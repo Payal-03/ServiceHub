@@ -4,6 +4,7 @@ import com.servicehub.dto.CreateRequestDto;
 import com.servicehub.dto.ExpressInterestDto;
 import com.servicehub.dto.SelectElectricianDto;
 import com.servicehub.dto.ServiceRequestDto;
+import com.servicehub.dto.UpdateRequestDto;
 import com.servicehub.entity.User;
 import com.servicehub.service.AuthService;
 import com.servicehub.service.ServiceRequestService;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.List;
 
@@ -41,6 +43,19 @@ public class ServiceRequestController {
     }
 
     /**
+     * Customer updates their posted job (only if OPEN and no electrician selected).
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<ServiceRequestDto> updateRequest(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateRequestDto dto,
+            Principal principal) {
+        User user = authService.getUserByEmail(principal.getName());
+        ServiceRequestDto updated = serviceRequestService.updateRequest(id, dto, user.getUserId());
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
      * Role-aware "my requests" endpoint.
      * - CUSTOMER: returns requests they posted.
      * - ELECTRICIAN: returns requests they have bid on.
@@ -58,17 +73,29 @@ public class ServiceRequestController {
     }
 
     /**
-     * Electricians browse OPEN requests, filtered by city and locality.
+     * Electricians browse OPEN requests, filtered by category, city, locality, and price range.
      */
     @GetMapping("/available")
     public ResponseEntity<List<ServiceRequestDto>> browseAvailableRequests(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String category,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String area,
-            @RequestParam(required = false) String locality) {
+            @RequestParam(required = false) String locality,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice) {
         String effectiveLocality = (locality != null && !locality.trim().isEmpty()) ? locality : area;
-        List<ServiceRequestDto> requests = serviceRequestService.browseOpenRequests(city, effectiveLocality);
+        List<ServiceRequestDto> requests = serviceRequestService.browseOpenRequests(
+                categoryId,
+                category,
+                city,
+                effectiveLocality,
+                minPrice,
+                maxPrice
+        );
         return ResponseEntity.ok(requests);
     }
+
 
     /**
      * View one service request by ID.

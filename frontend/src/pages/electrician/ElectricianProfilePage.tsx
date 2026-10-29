@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { User, Wrench, MapPin, Award, Star, AlertCircle, CheckCircle2, Save } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Wrench, MapPin, Award, Star, AlertCircle, CheckCircle2, Save, FileText, Briefcase, ArrowRight } from 'lucide-react';
 import { electricianApi, ratingApi } from '../../services/api';
 import { ElectricianProfile, Rating } from '../../types';
 import { useToast } from '../../context/ToastContext';
@@ -7,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { StarRating } from '../../components/ui/StarRating';
 
 export const ElectricianProfilePage: React.FC = () => {
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const [profile, setProfile] = useState<ElectricianProfile | null>(null);
   const [ratings, setRatings] = useState<Rating[]>([]);
@@ -113,6 +115,26 @@ export const ElectricianProfilePage: React.FC = () => {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Quick Electrician Actions */}
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/electrician/my-jobs')}
+            leftIcon={<FileText className="w-4 h-4 text-primary-600" />}
+          >
+            My Applications
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => navigate('/electrician/jobs')}
+            rightIcon={<ArrowRight className="w-4 h-4" />}
+          >
+            Apply to Jobs
+          </Button>
         </div>
       </div>
 

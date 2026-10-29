@@ -4,10 +4,12 @@ import {
   Category,
   CustomerProfile,
   ElectricianProfile,
+  Notification,
   Rating,
   Role,
   ServiceCategory,
   ServiceRequest,
+  UpdateRequestInput,
   User
 } from '../types';
 
@@ -101,14 +103,19 @@ export const requestApi = {
   },
 
   getAvailable: async (filters?: {
+    categoryId?: number;
+    category?: string;
     city?: string;
     locality?: string;
+    minPrice?: number;
+    maxPrice?: number;
   }): Promise<ServiceRequest[]> => {
     const res = await apiClient.get<ServiceRequest[]>('/requests/available', {
       params: filters,
     });
     return res.data;
   },
+
 
   getById: async (id: string | number): Promise<ServiceRequest> => {
     const res = await apiClient.get<ServiceRequest>(`/requests/${id}`);
@@ -150,6 +157,14 @@ export const requestApi = {
 
   electricianConfirm: async (id: string | number): Promise<ServiceRequest> => {
     const res = await apiClient.patch<ServiceRequest>(`/requests/${id}/provider-complete`);
+    return res.data;
+  },
+
+  update: async (
+    id: string | number,
+    data: UpdateRequestInput
+  ): Promise<ServiceRequest> => {
+    const res = await apiClient.put<ServiceRequest>(`/requests/${id}`, data);
     return res.data;
   },
 };
@@ -201,4 +216,28 @@ export const customerApi = {
     return res.data;
   },
 };
+
+// 7. Notification API
+export const notificationApi = {
+  getMyNotifications: async (): Promise<Notification[]> => {
+    const res = await apiClient.get<Notification[]>('/notifications');
+    return res.data;
+  },
+
+  getUnreadCount: async (): Promise<{ unreadCount: number }> => {
+    const res = await apiClient.get<{ unreadCount: number }>('/notifications/unread-count');
+    return res.data;
+  },
+
+  markAsRead: async (id: number | string): Promise<Notification> => {
+    const res = await apiClient.patch<Notification>(`/notifications/${id}/read`);
+    return res.data;
+  },
+
+  markAllAsRead: async (): Promise<{ message: string }> => {
+    const res = await apiClient.patch<{ message: string }>('/notifications/read-all');
+    return res.data;
+  },
+};
+
 

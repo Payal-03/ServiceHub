@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Zap, Menu, X, LogOut, User as UserIcon, PlusCircle, Briefcase, FileText } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
+import { NotificationBell } from './NotificationBell';
 
 export const Navbar: React.FC = () => {
   const { user, role, logout } = useAuth();
@@ -53,7 +54,7 @@ export const Navbar: React.FC = () => {
                 <Briefcase className="w-4 h-4" /> Browse Jobs
               </Link>
               <Link to="/electrician/my-jobs" className="hover:text-primary-600 transition-colors flex items-center gap-1.5">
-                <FileText className="w-4 h-4" /> My Bids
+                <FileText className="w-4 h-4" /> My Applications
               </Link>
               <Link to="/electrician/profile" className="hover:text-primary-600 transition-colors flex items-center gap-1.5">
                 <UserIcon className="w-4 h-4" /> My Profile
@@ -66,6 +67,9 @@ export const Navbar: React.FC = () => {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-3">
+              {/* Notification Bell */}
+              <NotificationBell />
+
               <Link
                 to={role === 'CUSTOMER' ? '/customer/profile' : '/electrician/profile'}
                 className="flex items-center gap-2 text-sm bg-neutral-100 hover:bg-neutral-200/80 transition-colors px-3 py-1.5 rounded-full border border-neutral-200"
@@ -105,8 +109,9 @@ export const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* Mobile Hamburger Toggle */}
-        <div className="md:hidden flex items-center gap-2">
+        {/* Mobile Hamburger Toggle & Notification Bell */}
+        <div className="md:hidden flex items-center gap-1 sm:gap-2">
+          {user && <NotificationBell />}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
@@ -168,7 +173,7 @@ export const Navbar: React.FC = () => {
                 onClick={() => setMobileMenuOpen(false)}
                 className="block py-2 text-base font-medium text-neutral-700 hover:text-primary-600"
               >
-                My Bids
+                My Applications
               </Link>
               <Link
                 to="/electrician/profile"

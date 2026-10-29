@@ -4,6 +4,7 @@ import com.servicehub.dto.CreateRequestDto;
 import com.servicehub.dto.ExpressInterestDto;
 import com.servicehub.dto.InterestDto;
 import com.servicehub.dto.ServiceRequestDto;
+import com.servicehub.dto.UpdateRequestDto;
 import com.servicehub.entity.*;
 import com.servicehub.exception.BadRequestException;
 import com.servicehub.exception.ConflictException;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,19 +28,22 @@ public class ServiceRequestService {
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final RequestInterestRepository requestInterestRepository;
     private final RatingRepository ratingRepository;
+    private final NotificationService notificationService;
 
     public ServiceRequestService(ServiceRequestRepository serviceRequestRepository,
                                  CustomerRepository customerRepository,
                                  ElectricianProfileRepository electricianProfileRepository,
                                  ServiceCategoryRepository serviceCategoryRepository,
                                  RequestInterestRepository requestInterestRepository,
-                                 RatingRepository ratingRepository) {
+                                 RatingRepository ratingRepository,
+                                 NotificationService notificationService) {
         this.serviceRequestRepository = serviceRequestRepository;
         this.customerRepository = customerRepository;
         this.electricianProfileRepository = electricianProfileRepository;
         this.serviceCategoryRepository = serviceCategoryRepository;
         this.requestInterestRepository = requestInterestRepository;
         this.ratingRepository = ratingRepository;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -87,6 +92,114 @@ public class ServiceRequestService {
 
         ServiceRequest saved = serviceRequestRepository.save(request);
         return mapToDto(saved);
+    }
+
+    /**
+     * Customer updates their posted job.
+     * Rule 1: Only the customer who posted the request can update it.
+     * Rule 2: Can ONLY be updated while status is OPEN.
+     * Rule 3: If an electrician is selected for the job, NO further changes can be made.
+     * Rule 4: Electricians who have shown interest in this job are notified about this job update.
+     */
+    @Transactional
+    public ServiceRequestDto updateRequest(Long requestId, UpdateRequestDto dto, Long currentUserId) {
+        ServiceRequest request = serviceRequestRepository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service request not found for ID: " + requestId));
+
+        // Rule 1: Customer ownership check
+        if (!request.getCustomer().getUser().getUserId().equals(currentUserId)) {
+            throw new BadRequestException("Only the customer who posted this request can edit it.");
+        }
+
+        // Rule 3: Electrician selection check
+        if (request.getSelectedElectrician() != null) {
+            throw new BadRequestException("No further changes can be made to this job post because an electrician has already been selected.");
+        }
+
+        // Rule 2: Status check
+        if (request.getStatus() != RequestStatus.OPEN) {
+            throw new BadRequestException("Job posts can only be edited while they are OPEN.");
+        }
+
+        // Update Category if provided
+        Long categoryId = dto.getResolvedCategoryId();
+        if (categoryId != null) {
+            ServiceCategory category = serviceCategoryRepository.findById(categoryId).orElse(null);
+            if (category != null) {
+                request.setCategory(category);
+            }
+        } else if (dto.getServiceCategory() != null && !dto.getServiceCategory().trim().isEmpty()) {
+            ServiceCategory category = serviceCategoryRepository.findByCategoryNameIgnoreCase(dto.getServiceCategory().trim()).orElse(null);
+            if (category != null) {
+                request.setCategory(category);
+            }
+        }
+
+        // Update Title if provided
+        String title = dto.getResolvedTitle();
+        if (title != null && !title.trim().isEmpty()) {
+            request.setTitle(title);
+        }
+
+        // Update Description
+        if (dto.getDescription() != null && !dto.getDescription().trim().isEmpty()) {
+            request.setDescription(dto.getDescription().trim());
+        }
+
+        // Update City
+        if (dto.getCity() != null && !dto.getCity().trim().isEmpty()) {
+            request.setCity(dto.getCity().trim());
+        }
+
+        // Update Locality
+        if (dto.getLocality() != null && !dto.getLocality().trim().isEmpty()) {
+            request.setLocality(dto.getLocality().trim());
+        }
+
+        // Update Address
+        if (dto.getResolvedAddress() != null && !dto.getResolvedAddress().trim().isEmpty()) {
+            request.setAddress(dto.getResolvedAddress());
+        }
+
+        // Update Budget
+        BigDecimal budget = dto.getResolvedBudget();
+        if (budget != null) {
+            if (budget.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BadRequestException("Budget must be greater than zero.");
+            }
+            request.setExpectedBudget(budget);
+        }
+
+        request.setUpdatedAt(LocalDateTime.now());
+        ServiceRequest updated = serviceRequestRepository.save(request);
+
+        // Rule 4: Notify electricians who have shown interest in this job
+        List<RequestInterest> interests = requestInterestRepository
+                .findByRequest_RequestIdOrderByCreatedAtDesc(requestId);
+
+        String notificationTitle = "Job Post Updated: " + updated.getTitle();
+        String notificationMessage = String.format(
+                "Customer has updated job details for \"%s\" (New Budget: ₹%s, Locality: %s, %s). Please review the updated job requirements.",
+                updated.getTitle(),
+                updated.getExpectedBudget() != null ? updated.getExpectedBudget().stripTrailingZeros().toPlainString() : "N/A",
+                updated.getLocality(),
+                updated.getCity()
+        );
+
+        for (RequestInterest interest : interests) {
+            if (interest.getElectrician() != null && interest.getElectrician().getUser() != null) {
+                User electricianUser = interest.getElectrician().getUser();
+                notificationService.createNotification(
+                        electricianUser,
+                        updated,
+                        notificationTitle,
+                        notificationMessage,
+                        "JOB_UPDATED"
+                );
+            }
+        }
+
+        return mapToDto(updated);
     }
 
     /**
@@ -146,19 +259,34 @@ public class ServiceRequestService {
     }
 
     /**
-     * 5. Browse OPEN requests (filtered by city and locality).
+     * 5. Browse OPEN requests (filtered by category, city, locality, and price range).
      */
-    public List<ServiceRequestDto> browseOpenRequests(String city, String locality) {
+    public List<ServiceRequestDto> browseOpenRequests(
+            Long categoryId,
+            String categoryName,
+            String city,
+            String locality,
+            BigDecimal minPrice,
+            BigDecimal maxPrice) {
+        String cleanCategoryName = (categoryName != null && !categoryName.trim().isEmpty()) ? categoryName.trim() : null;
         String cleanCity = (city != null && !city.trim().isEmpty()) ? city.trim() : null;
         String cleanLocality = (locality != null && !locality.trim().isEmpty()) ? locality.trim() : null;
 
         List<ServiceRequest> requests = serviceRequestRepository.findOpenRequestsFiltered(
                 RequestStatus.OPEN,
+                categoryId,
+                cleanCategoryName,
                 cleanCity,
-                cleanLocality
+                cleanLocality,
+                minPrice,
+                maxPrice
         );
 
         return requests.stream().map(this::mapToDto).collect(Collectors.toList());
+    }
+
+    public List<ServiceRequestDto> browseOpenRequests(String city, String locality) {
+        return browseOpenRequests(null, null, city, locality, null, null);
     }
 
     /**
@@ -421,6 +549,10 @@ public class ServiceRequestService {
         dto.setElectricianPhone(interest.getElectrician().getUser().getPhone());
         dto.setElectricianEmail(interest.getElectrician().getUser().getEmail());
         dto.setElectricianExperienceYears(interest.getElectrician().getExperienceYears());
+        dto.setSkills(interest.getElectrician().getSkills());
+        dto.setDescription(interest.getElectrician().getDescription());
+        dto.setServiceCity(interest.getElectrician().getServiceCity());
+        dto.setServiceLocality(interest.getElectrician().getServiceLocality());
 
         Double avg = ratingRepository.calculateAverageScoreByUserId(
                 interest.getElectrician().getUser().getUserId()

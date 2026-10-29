@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Zap, IndianRupee, MapPin, AlertCircle, ArrowLeft, Send } from 'lucide-react';
 import { categoryApi, requestApi } from '../../services/api';
 import { ServiceCategory } from '../../types';
 import { useToast } from '../../context/ToastContext';
 import { Button } from '../../components/ui/Button';
+import { DEFAULT_SERVICE_CATEGORIES } from '../../data/categories';
 
 export const CreateRequestPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
 
-  const [categories, setCategories] = useState<ServiceCategory[]>([]);
-  const [categoryId, setCategoryId] = useState<number | ''>('');
+  const [categories, setCategories] = useState<ServiceCategory[]>(DEFAULT_SERVICE_CATEGORIES);
+  const [categoryId, setCategoryId] = useState<number | ''>(DEFAULT_SERVICE_CATEGORIES[0]?.id || 1);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [city, setCity] = useState('Mathura');
@@ -22,18 +24,40 @@ export const CreateRequestPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check if category passed via location state
+    const stateCatName = (location.state as any)?.categoryName;
+    const stateCatId = (location.state as any)?.categoryId;
+
     categoryApi
       .getAll()
       .then((data) => {
-        setCategories(data);
-        if (data.length > 0) {
+        if (data && data.length > 0) {
+          setCategories(data);
+          if (stateCatName) {
+            const matched = data.find((c) => c.name.toLowerCase() === stateCatName.toLowerCase());
+            if (matched) {
+              setCategoryId(matched.id);
+              return;
+            }
+          }
+          if (stateCatId) {
+            setCategoryId(Number(stateCatId));
+            return;
+          }
           setCategoryId(data[0].id);
         }
       })
       .catch((err) => {
-        console.error('Failed to load categories', err);
+        console.warn('Using default categories:', err);
+        if (stateCatName) {
+          const matched = DEFAULT_SERVICE_CATEGORIES.find((c) => c.name.toLowerCase() === stateCatName.toLowerCase());
+          if (matched) {
+            setCategoryId(matched.id);
+          }
+        }
       });
-  }, []);
+  }, [location.state]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

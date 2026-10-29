@@ -108,14 +108,32 @@ CREATE TABLE IF NOT EXISTS ratings (
     CONSTRAINT fk_ratings_reviewee FOREIGN KEY (reviewee_user_id) REFERENCES users (user_id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+-- 8. notifications: In-app notifications for users (e.g. electricians notified when a job is edited)
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    request_id BIGINT NULL,
+    title VARCHAR(150) NOT NULL,
+    message VARCHAR(500) NOT NULL,
+    type VARCHAR(50) NOT NULL DEFAULT 'JOB_UPDATED',
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_notifications_request FOREIGN KEY (request_id) REFERENCES service_requests (request_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- =============================================================================
 -- Seed Data: Service Categories
 -- =============================================================================
 INSERT INTO service_categories (category_name, description, is_active)
 VALUES 
-    ('Fan repair', 'Ceiling fan, exhaust fan, regulator and speed problems', TRUE),
-    ('Light installation', 'Tube lights, LED panels, chandeliers, fancy decorative lights', TRUE),
-    ('Switchboard repair', 'Broken switches, loose sockets, spark issues, MCB replacement', TRUE),
-    ('Wiring', 'Full house wiring, short circuit troubleshooting, rewiring', TRUE),
-    ('Socket repair', 'Power plugs, 16A AC/geyser sockets, burnt socket replacement', TRUE)
-ON DUPLICATE KEY UPDATE category_name = VALUES(category_name);
+    ('Fan & Lighting', 'Fans, regulators, bulbs, tube lights, LED lights, decorative lights, and exhaust fans.', TRUE),
+    ('Switches, Sockets & Wiring', 'Switchboards, plug points, new wiring, rewiring, and loose connections.', TRUE),
+    ('Electrical Faults & Power', 'Power failures, short circuits, MCBs, fuses, and inverter connections.', TRUE),
+    ('AC Installation & Repair', 'AC installation, servicing, cooling issues, and AC electrical faults.', TRUE),
+    ('Home Appliance Repair', 'Washing machines, refrigerators, and other household appliances.', TRUE),
+    ('Geyser & Water Heater', 'Installation, electrical connection issues, and repairs.', TRUE),
+    ('General Electrical Work', 'Doorbells, new electrical points, appliance connections, and other small electrical jobs.', TRUE)
+ON DUPLICATE KEY UPDATE description = VALUES(description), is_active = VALUES(is_active);
+

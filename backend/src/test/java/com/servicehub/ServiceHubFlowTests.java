@@ -42,6 +42,9 @@ class ServiceHubFlowTests {
     @Autowired
     private RatingService ratingService;
 
+    @Autowired
+    private com.servicehub.service.NotificationService notificationService;
+
     private Long customerUserId;
     private Long electrician1UserId;
     private Long electrician2UserId;
@@ -232,5 +235,118 @@ class ServiceHubFlowTests {
         assertThrows(RuntimeException.class, () -> {
             serviceRequestService.cancelRequest(reqId, customerUserId);
         });
+    }
+
+    @Test
+    @DisplayName("Customer can edit OPEN job and interested electricians receive notification")
+    void testCustomerCanEditOpenJobAndNotifyInterestedElectricians() {
+        // 1. Customer creates a job
+        CreateRequestDto createDto = new CreateRequestDto();
+        createDto.setCategoryId(categoryId);
+        createDto.setTitle("Ceiling fan slow speed");
+        createDto.setDescription("Fan running slow on regulator 5");
+        createDto.setCity("Mathura");
+        createDto.setLocality("Krishna Nagar");
+        createDto.setAddress("House 12, Street 3");
+        createDto.setExpectedBudget(new BigDecimal("250.00"));
+
+        ServiceRequestDto request = serviceRequestService.createRequest(createDto, customerUserId);
+        Long reqId = Long.valueOf(request.getId());
+
+        // 2. Electrician 1 expresses interest
+        ExpressInterestDto interest1 = new ExpressInterestDto();
+        interest1.setBidAmount(new BigDecimal("250.00"));
+        interest1.setMessage("I can replace the capacitor today.");
+        serviceRequestService.expressInterest(reqId, interest1, electrician1UserId);
+
+        // 3. Electrician 2 expresses interest
+        ExpressInterestDto interest2 = new ExpressInterestDto();
+        interest2.setBidAmount(new BigDecimal("220.00"));
+        interest2.setMessage("Available in 30 mins.");
+        serviceRequestService.expressInterest(reqId, interest2, electrician2UserId);
+
+        // Verify initial unread notifications for electricians is 0
+        assertEquals(0, notificationService.getUnreadCount(electrician1UserId));
+        assertEquals(0, notificationService.getUnreadCount(electrician2UserId));
+
+        // 4. Customer edits the job while still OPEN
+        UpdateRequestDto updateDto = new UpdateRequestDto();
+        updateDto.setTitle("Ceiling fan not spinning and humming noise");
+        updateDto.setDescription("Capacitor burned out, need urgent repair");
+        updateDto.setCity("Mathura");
+        updateDto.setLocality("Krishna Nagar");
+        updateDto.setAddress("House 12, Street 3, Landmark: Shiv Temple");
+        updateDto.setExpectedBudget(new BigDecimal("350.00"));
+
+        ServiceRequestDto updated = serviceRequestService.updateRequest(reqId, updateDto, customerUserId);
+
+        // Verify updated request fields
+        assertEquals("Ceiling fan not spinning and humming noise", updated.getTitle());
+        assertEquals("Capacitor burned out, need urgent repair", updated.getDescription());
+        assertEquals(new BigDecimal("350.00"), updated.getBudget());
+        assertEquals("House 12, Street 3, Landmark: Shiv Temple", updated.getAddress());
+
+        // 5. Verify both interested electricians received notification
+        assertEquals(1, notificationService.getUnreadCount(electrician1UserId));
+        assertEquals(1, notificationService.getUnreadCount(electrician2UserId));
+
+        List<NotificationDto> elec1Notifications = notificationService.getUserNotifications(electrician1UserId);
+        assertFalse(elec1Notifications.isEmpty());
+        NotificationDto notif = elec1Notifications.get(0);
+        assertEquals(reqId, notif.getRequestId());
+        assertTrue(notif.getTitle().contains("Job Post Updated"));
+        assertTrue(notif.getMessage().contains("350"));
+        assertEquals("JOB_UPDATED", notif.getType());
+        assertFalse(notif.isRead());
+
+        // Mark notification as read
+        NotificationDto readNotif = notificationService.markAsRead(notif.getId(), electrician1UserId);
+        assertTrue(readNotif.isRead());
+        assertEquals(0, notificationService.getUnreadCount(electrician1UserId));
+    }
+
+    @Test
+    @DisplayName("Once an electrician is selected, no further changes to job post can be made")
+    void testJobCannotBeEditedAfterElectricianSelected() {
+        // 1. Customer creates a job
+        CreateRequestDto createDto = new CreateRequestDto();
+        createDto.setCategoryId(categoryId);
+        createDto.setTitle("Geyser thermostat issue");
+        createDto.setDescription("Water is overheating");
+        createDto.setCity("Mathura");
+        createDto.setLocality("Krishna Nagar");
+        createDto.setExpectedBudget(new BigDecimal("500.00"));
+
+        ServiceRequestDto request = serviceRequestService.createRequest(createDto, customerUserId);
+        Long reqId = Long.valueOf(request.getId());
+
+        // 2. Electrician 1 expresses interest
+        ExpressInterestDto interest1 = new ExpressInterestDto();
+        interest1.setBidAmount(new BigDecimal("500.00"));
+        interest1.setMessage("I have spare thermostat ready.");
+        serviceRequestService.expressInterest(reqId, interest1, electrician1UserId);
+
+        // 3. Customer selects Electrician 1
+        serviceRequestService.selectElectrician(reqId, electrician1Id, customerUserId);
+
+        // Verify job is now IN_PROGRESS with selected electrician
+        ServiceRequestDto current = serviceRequestService.getRequestById(reqId);
+        assertEquals("IN_PROGRESS", current.getStatus());
+        assertNotNull(current.getSelectedElectrician());
+
+        // 4. Customer tries to edit the job post -> must be REJECTED!
+        UpdateRequestDto updateDto = new UpdateRequestDto();
+        updateDto.setTitle("Change title after hire");
+        updateDto.setDescription("Trying to change scope");
+        updateDto.setCity("Mathura");
+        updateDto.setLocality("Krishna Nagar");
+        updateDto.setExpectedBudget(new BigDecimal("400.00"));
+
+        com.servicehub.exception.BadRequestException ex = assertThrows(
+                com.servicehub.exception.BadRequestException.class,
+                () -> serviceRequestService.updateRequest(reqId, updateDto, customerUserId)
+        );
+
+        assertTrue(ex.getMessage().contains("selected") || ex.getMessage().contains("open"));
     }
 }

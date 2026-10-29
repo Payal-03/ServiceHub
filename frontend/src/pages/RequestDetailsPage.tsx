@@ -15,6 +15,10 @@ import {
   Send,
   Wrench,
   ThumbsUp,
+  MessageCircle,
+  Edit3,
+  Lock,
+  Info,
 } from 'lucide-react';
 import { requestApi, ratingApi } from '../services/api';
 import { ServiceRequest, RequestStatus, Interest } from '../types';
@@ -23,6 +27,8 @@ import { useToast } from '../context/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { StarRating } from '../components/ui/StarRating';
+import { ElectricianProfileModal } from '../components/common/ElectricianProfileModal';
+import { EditJobModal } from '../components/common/EditJobModal';
 
 export const RequestDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,9 +41,16 @@ export const RequestDetailsPage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Edit Job modal state
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // Modal to inspect electrician profile
+  const [viewingElectrician, setViewingElectrician] = useState<Interest | null>(null);
+
   // Electrician bid state
   const [bidAmount, setBidAmount] = useState<number | ''>('');
   const [bidMessage, setBidMessage] = useState('');
+
 
   // Rating state
   const [ratingScore, setRatingScore] = useState(5);
@@ -123,24 +136,24 @@ export const RequestDetailsPage: React.FC = () => {
         message: bidMessage.trim() || 'I can complete this electrical work efficiently.',
       });
       setRequest(updated);
-      showToast('Your bid quote has been submitted to the customer!', 'success');
+      showToast('Your application has been submitted to the customer!', 'success');
     } catch (err: any) {
-      showToast(err.response?.data?.message || 'Failed to submit bid.', 'error');
+      showToast(err.response?.data?.message || 'Failed to submit application.', 'error');
     } finally {
       setActionLoading(false);
     }
   };
 
-  // Electrician Withdraw Bid
+  // Electrician Withdraw Application
   const handleWithdrawInterest = async () => {
-    if (!id || !confirm('Withdraw your bid for this job?')) return;
+    if (!id || !confirm('Withdraw your application for this job?')) return;
     setActionLoading(true);
     try {
       const updated = await requestApi.withdrawInterest(id);
       setRequest(updated);
-      showToast('Your bid has been withdrawn.', 'info');
+      showToast('Your application has been withdrawn.', 'info');
     } catch (err: any) {
-      showToast(err.response?.data?.message || 'Failed to withdraw bid.', 'error');
+      showToast(err.response?.data?.message || 'Failed to withdraw application.', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -269,6 +282,21 @@ export const RequestDetailsPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Job Details Updated Alert Banner */}
+        {request.updatedAt && request.createdAt && new Date(request.updatedAt).getTime() - new Date(request.createdAt).getTime() > 2000 && (
+          <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-200 text-sky-800 text-xs flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Info className="w-4 h-4 text-sky-600 flex-shrink-0" />
+              <span>
+                <strong>Job Details Updated:</strong> The customer revised the requirements/budget for this job.
+              </span>
+            </div>
+            <span className="text-[11px] text-sky-600 font-mono hidden sm:inline">
+              Updated {new Date(request.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+        )}
+
         {/* Description */}
         <div>
           <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-2">
@@ -311,18 +339,51 @@ export const RequestDetailsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Customer Actions for OPEN state */}
-        {isCustomerOwner && request.status === 'OPEN' && (
-          <div className="pt-4 border-t border-neutral-100 flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCancel}
-              isLoading={actionLoading}
-              className="text-rose-600 border-rose-200 hover:bg-rose-50"
-            >
-              Cancel Request
-            </Button>
+        {/* Customer Actions & Lock Status */}
+        {isCustomerOwner && (
+          <div className="pt-4 border-t border-neutral-100 flex flex-wrap items-center justify-between gap-3">
+            {request.status === 'OPEN' && !request.selectedElectricianId ? (
+              <>
+                <p className="text-xs text-neutral-500">
+                  You can edit job details while the post is open. Interested electricians will be automatically notified.
+                </p>
+                <div className="flex items-center gap-2.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditModalOpen(true)}
+                    leftIcon={<Edit3 className="w-3.5 h-3.5" />}
+                    className="text-neutral-700 hover:text-neutral-900 border-neutral-300"
+                  >
+                    Edit Job Details
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancel}
+                    isLoading={actionLoading}
+                    className="text-rose-600 border-rose-200 hover:bg-rose-50"
+                  >
+                    Cancel Request
+                  </Button>
+                </div>
+              </>
+            ) : request.selectedElectricianId ? (
+              <div className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm">
+                <div className="flex items-center gap-2 font-medium">
+                  <Lock className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <span>Electrician selected — job post is locked and no further changes can be made.</span>
+                </div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-md">
+                  Locked
+                </span>
+              </div>
+            ) : (
+              <div className="w-full flex items-center gap-2 p-3 rounded-2xl bg-neutral-100 text-neutral-600 text-xs">
+                <Lock className="w-4 h-4 text-neutral-500 flex-shrink-0" />
+                <span>This job post is {request.status.toLowerCase()} and cannot be edited.</span>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -464,19 +525,19 @@ export const RequestDetailsPage: React.FC = () => {
         </div>
       )}
 
-      {/* ELECTRICIAN VIEW: Bid on OPEN request */}
+      {/* ELECTRICIAN VIEW: Apply on OPEN request */}
       {role === 'ELECTRICIAN' && request.status === 'OPEN' && (
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-neutral-200 shadow-sm space-y-4">
           <h3 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
             <Zap className="w-5 h-5 text-primary-600" />
-            Electrician Bidding Section
+            Apply for this Job
           </h3>
 
           {myExistingBid ? (
             <div className="p-4 rounded-2xl bg-primary-50 border border-primary-200 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-primary-700 uppercase">You have submitted a bid</span>
+                  <span className="text-xs font-bold text-primary-700 uppercase">You have submitted an application</span>
                   <p className="text-lg font-extrabold text-neutral-900">₹{myExistingBid.bidAmount}</p>
                 </div>
                 <Badge variant="warning">{myExistingBid.status}</Badge>
@@ -490,7 +551,7 @@ export const RequestDetailsPage: React.FC = () => {
                   isLoading={actionLoading}
                   className="text-rose-600 border-rose-200 hover:bg-rose-50"
                 >
-                  Withdraw Bid
+                  Withdraw Application
                 </Button>
               </div>
             </div>
@@ -502,7 +563,7 @@ export const RequestDetailsPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-neutral-700 mb-1">
-                  Your Bid Amount (₹)
+                  Your Offer / Quote Amount (₹)
                 </label>
                 <div className="relative">
                   <IndianRupee className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -537,75 +598,206 @@ export const RequestDetailsPage: React.FC = () => {
                 isLoading={actionLoading}
                 rightIcon={<Send className="w-4 h-4" />}
               >
-                Submit Bid Quote
+                Apply
               </Button>
             </form>
           )}
         </div>
       )}
 
-      {/* CUSTOMER VIEW: List of interested electrician bids */}
+      {/* CUSTOMER VIEW: List of interested electrician applications */}
       {isCustomerOwner && request.status === 'OPEN' && (
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-neutral-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-neutral-900">
-              Electrician Bids ({request.interestedProviders?.length || 0})
-            </h3>
-            <span className="text-xs text-neutral-500">Choose the best electrician for your job</span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-neutral-100">
+            <div>
+              <h3 className="text-lg font-bold text-neutral-900">
+                Interested Electricians ({request.interestedProviders?.length || 0})
+              </h3>
+              <p className="text-xs text-neutral-500">
+                Review profiles, contact electricians to discuss your requirements, and select the best professional.
+              </p>
+            </div>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary-50 text-primary-700 border border-primary-200 self-start sm:self-auto">
+              Open for Selection
+            </span>
           </div>
 
           {request.interestedProviders && request.interestedProviders.length > 0 ? (
-            <div className="space-y-3">
-              {request.interestedProviders.map((bid) => (
-                <div
-                  key={bid.interestId}
-                  className="p-4 rounded-2xl border border-neutral-200 hover:border-primary-500 hover:shadow-xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-base text-neutral-900">
-                        {bid.electricianName}
-                      </span>
-                      <span className="flex items-center gap-0.5 text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                        <Star className="w-3 h-3 fill-current" />
-                        {bid.electricianRating > 0 ? bid.electricianRating.toFixed(1) : 'New'}
-                      </span>
-                      <span className="text-xs text-neutral-500">
-                        {bid.electricianExperienceYears} yrs exp
-                      </span>
+            <div className="space-y-4">
+              {request.interestedProviders.map((bid) => {
+                const cleanPhone = (bid.electricianPhone || '').replace(/\D/g, '');
+                const whatsappUrl = cleanPhone
+                  ? `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(
+                      `Hi ${bid.electricianName}, I received your application for my job "${request.title}" on ServiceHub. I'd like to discuss the repair.`
+                    )}`
+                  : '';
+                const skillsArr = (bid.skills || '').split(',').map((s) => s.trim()).filter(Boolean);
+
+                return (
+                  <div
+                    key={bid.interestId}
+                    className="p-5 rounded-2xl border border-neutral-200 hover:border-primary-500 hover:shadow-md transition-all bg-white space-y-4"
+                  >
+                    {/* Top Row: Electrician Info & Quoted Price */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 text-white flex items-center justify-center font-bold text-lg shadow-xs flex-shrink-0">
+                          {bid.electricianName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-base text-neutral-900">
+                              {bid.electricianName}
+                            </span>
+                            <span className="flex items-center gap-0.5 text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                              {bid.electricianRating > 0 ? bid.electricianRating.toFixed(1) : 'New'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-neutral-500 mt-0.5">
+                            <span>{bid.electricianExperienceYears} yrs experience</span>
+                            {bid.serviceCity && (
+                              <>
+                                <span>•</span>
+                                <span className="flex items-center gap-0.5">
+                                  <MapPin className="w-3 h-3 text-neutral-400" />
+                                  {bid.serviceCity}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quoted Offer */}
+                      <div className="text-left sm:text-right bg-neutral-50 sm:bg-transparent p-3 sm:p-0 rounded-xl border sm:border-0 border-neutral-200/70">
+                        <span className="text-[11px] text-neutral-400 block font-medium uppercase tracking-wider">
+                          Quoted Offer
+                        </span>
+                        <span className="text-2xl font-extrabold text-neutral-900 flex items-center sm:justify-end gap-0.5">
+                          <IndianRupee className="w-5 h-5 text-emerald-600" />
+                          {bid.bidAmount}
+                        </span>
+                      </div>
                     </div>
 
-                    <p className="text-xs text-neutral-600 italic">"{bid.message}"</p>
-                  </div>
+                    {/* Application Message */}
+                    {bid.message && (
+                      <p className="text-xs text-neutral-600 bg-neutral-50 p-3 rounded-xl border border-neutral-200/60 italic">
+                        "{bid.message}"
+                      </p>
+                    )}
 
-                  <div className="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 pt-2 sm:pt-0">
-                    <div className="text-left sm:text-right">
-                      <span className="text-[11px] text-neutral-400 block font-medium">Quote Price</span>
-                      <span className="text-xl font-extrabold text-neutral-900 flex items-center sm:justify-end gap-0.5">
-                        <IndianRupee className="w-4 h-4 text-emerald-600" />
-                        {bid.bidAmount}
-                      </span>
+                    {/* Skills Tags */}
+                    {skillsArr.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[11px] font-semibold text-neutral-400 mr-1">Skills:</span>
+                        {skillsArr.slice(0, 4).map((skill, i) => (
+                          <span
+                            key={i}
+                            className="text-[11px] px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-700 font-medium"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                        {skillsArr.length > 4 && (
+                          <span className="text-[11px] text-neutral-400">+{skillsArr.length - 4} more</span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Action Bar: Contact Electrician & View Profile & Select */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-neutral-100">
+                      {/* Direct Contact Buttons */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        {bid.electricianPhone && (
+                          <a
+                            href={`tel:${bid.electricianPhone}`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 text-xs font-semibold text-neutral-800 bg-neutral-50 hover:bg-neutral-100 transition-colors"
+                            title={`Call ${bid.electricianName}`}
+                          >
+                            <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Call ({bid.electricianPhone})</span>
+                          </a>
+                        )}
+
+                        {cleanPhone && (
+                          <a
+                            href={whatsappUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-200 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                            title="Chat on WhatsApp"
+                          >
+                            <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>WhatsApp</span>
+                          </a>
+                        )}
+                      </div>
+
+                      {/* Profile & Selection Buttons */}
+                      <div className="flex items-center gap-2 ml-auto">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setViewingElectrician(bid)}
+                          leftIcon={<User className="w-3.5 h-3.5" />}
+                        >
+                          View Full Profile
+                        </Button>
+
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleSelectElectrician(bid.electricianId)}
+                          isLoading={actionLoading}
+                        >
+                          Select Electrician
+                        </Button>
+                      </div>
                     </div>
-
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => handleSelectElectrician(bid.electricianId)}
-                      isLoading={actionLoading}
-                    >
-                      Select Electrician
-                    </Button>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
-            <div className="text-center py-8 text-neutral-500 text-sm bg-neutral-50 rounded-2xl border border-neutral-100">
-              No electricians have quoted on this job yet. Local electricians in your area are being notified!
+            <div className="text-center py-10 px-4 bg-neutral-50 rounded-2xl border border-neutral-100 space-y-2">
+              <p className="text-neutral-700 font-semibold text-sm">No electricians have applied yet.</p>
+              <p className="text-xs text-neutral-500 max-w-sm mx-auto">
+                Local electricians in your area are currently reviewing your requirement. As soon as they apply, their profiles and price quotes will appear here.
+              </p>
             </div>
           )}
         </div>
       )}
+
+      {/* Electrician Profile & Reviews Modal */}
+      {viewingElectrician && (
+        <ElectricianProfileModal
+          isOpen={Boolean(viewingElectrician)}
+          onClose={() => setViewingElectrician(null)}
+          electricianId={viewingElectrician.electricianId}
+          applicant={viewingElectrician}
+          jobTitle={request.title}
+          onSelectElectrician={(id) => {
+            setViewingElectrician(null);
+            handleSelectElectrician(id);
+          }}
+          isSelecting={actionLoading}
+        />
+      )}
+
+      {/* Edit Job Post Modal */}
+      {isCustomerOwner && request.status === 'OPEN' && !request.selectedElectricianId && (
+        <EditJobModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          request={request}
+          onJobUpdated={(updated) => setRequest(updated)}
+        />
+      )}
     </div>
   );
 };
+
+

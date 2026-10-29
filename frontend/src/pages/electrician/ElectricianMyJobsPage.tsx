@@ -35,14 +35,14 @@ export const ElectricianMyJobsPage: React.FC = () => {
 
   const handleWithdraw = async (e: React.MouseEvent, jobId: string) => {
     e.stopPropagation(); // prevent card navigation
-    if (!confirm('Withdraw your bid for this job?')) return;
+    if (!confirm('Withdraw your application for this job?')) return;
     setWithdrawingId(jobId);
     try {
       await requestApi.withdrawInterest(jobId);
-      showToast('Your bid has been withdrawn.', 'info');
+      showToast('Your application has been withdrawn.', 'info');
       await load(); // refresh list
     } catch (err: any) {
-      showToast(err.response?.data?.message || 'Failed to withdraw bid.', 'error');
+      showToast(err.response?.data?.message || 'Failed to withdraw application.', 'error');
     } finally {
       setWithdrawingId(null);
     }
@@ -51,7 +51,7 @@ export const ElectricianMyJobsPage: React.FC = () => {
   const getStatusBadge = (status: RequestStatus) => {
     switch (status) {
       case 'OPEN':
-        return <Badge variant="warning">Bid Submitted / Open</Badge>;
+        return <Badge variant="warning">Application Submitted / Open</Badge>;
       case 'IN_PROGRESS':
         return <Badge variant="primary">Assigned to You / In Progress</Badge>;
       case 'COMPLETED':
@@ -67,10 +67,10 @@ export const ElectricianMyJobsPage: React.FC = () => {
     <div className="space-y-6 py-6 max-w-5xl mx-auto">
       <div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900">
-          My Bids &amp; Assigned Jobs
+          My Applications &amp; Assigned Jobs
         </h1>
         <p className="text-sm text-neutral-500">
-          Track the status of jobs you have quoted on or have been hired to complete.
+          Track the status of jobs you have applied to or have been hired to complete.
         </p>
       </div>
 
@@ -122,7 +122,7 @@ export const ElectricianMyJobsPage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-3 sm:border-l sm:border-neutral-100 sm:pl-4">
-                {/* Withdraw button — only on OPEN bids */}
+                {/* Withdraw button — only on OPEN applications */}
                 {job.status === 'OPEN' && (
                   <Button
                     variant="outline"
@@ -148,9 +148,9 @@ export const ElectricianMyJobsPage: React.FC = () => {
             <Briefcase className="w-6 h-6" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-lg font-bold text-neutral-900">No bids placed yet</h3>
+            <h3 className="text-lg font-bold text-neutral-900">No applications submitted yet</h3>
             <p className="text-sm text-neutral-500 max-w-sm mx-auto">
-              You haven't placed any bids on open jobs yet. Check out open jobs and start bidding!
+              You haven't applied for any open jobs yet. Check out open jobs and start applying!
             </p>
           </div>
           <Button variant="primary" onClick={() => navigate('/electrician/jobs')}>

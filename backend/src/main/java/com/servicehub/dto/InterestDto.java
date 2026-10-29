@@ -19,6 +19,11 @@ public class InterestDto {
     private Double providerRating; // Frontend alias
     private Integer electricianExperienceYears;
     private Integer providerExperienceYears; // Frontend alias
+    private String skills;
+    private String description;
+    private String bio; // Frontend alias
+    private String serviceCity;
+    private String serviceLocality;
     private BigDecimal bidAmount;
     private BigDecimal quotedAmount; // Frontend alias
     private String status;
@@ -29,6 +34,51 @@ public class InterestDto {
 
     public InterestDto() {
     }
+
+    public String getSkills() {
+        return skills;
+    }
+
+    public void setSkills(String skills) {
+        this.skills = skills;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+        this.bio = description;
+    }
+
+    public String getBio() {
+        return bio != null ? bio : description;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+        if (this.description == null) {
+            this.description = bio;
+        }
+    }
+
+    public String getServiceCity() {
+        return serviceCity;
+    }
+
+    public void setServiceCity(String serviceCity) {
+        this.serviceCity = serviceCity;
+    }
+
+    public String getServiceLocality() {
+        return serviceLocality;
+    }
+
+    public void setServiceLocality(String serviceLocality) {
+        this.serviceLocality = serviceLocality;
+    }
+
 
     public Long getInterestId() {
         return interestId;

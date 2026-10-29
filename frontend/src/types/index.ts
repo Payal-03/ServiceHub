@@ -58,11 +58,16 @@ export interface Interest {
   electricianEmail?: string;
   electricianRating: number;
   electricianExperienceYears: number;
+  skills?: string;
+  description?: string;
+  serviceCity?: string;
+  serviceLocality?: string;
   bidAmount: number;
   status: InterestStatus;
   message: string;
   createdAt: string;
 }
+
 
 export interface ServiceRequest {
   id: string;
@@ -124,4 +129,26 @@ export interface CustomerProfile {
   totalRequestsCount: number;
   ratings: Rating[];
 }
+
+export interface Notification {
+  id: number;
+  userId: number;
+  requestId?: number;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface UpdateRequestInput {
+  categoryId?: number;
+  title: string;
+  description: string;
+  city: string;
+  locality: string;
+  address: string;
+  expectedBudget: number;
+}
+
 
