@@ -57,7 +57,8 @@ public class ServiceRequestService {
         // Resolve category
         ServiceCategory category = null;
         Long categoryId = dto.getResolvedCategoryId();
-        if (categoryId != null) {
+
+        if (categoryId != null && categoryId > 0) {
             category = serviceCategoryRepository.findById(categoryId).orElse(null);
         }
         if (category == null && dto.getServiceCategory() != null && !dto.getServiceCategory().trim().isEmpty()) {
@@ -100,6 +101,7 @@ public class ServiceRequestService {
      * Rule 2: Can ONLY be updated while status is OPEN.
      * Rule 3: If an electrician is selected for the job, NO further changes can be made.
      * Rule 4: Electricians who have shown interest in this job are notified about this job update.
+     * Rule 5: Once a job is posted, its service category is fixed and cannot be changed.
      */
     @Transactional
     public ServiceRequestDto updateRequest(Long requestId, UpdateRequestDto dto, Long currentUserId) {
@@ -121,19 +123,8 @@ public class ServiceRequestService {
             throw new BadRequestException("Job posts can only be edited while they are OPEN.");
         }
 
-        // Update Category if provided
-        Long categoryId = dto.getResolvedCategoryId();
-        if (categoryId != null) {
-            ServiceCategory category = serviceCategoryRepository.findById(categoryId).orElse(null);
-            if (category != null) {
-                request.setCategory(category);
-            }
-        } else if (dto.getServiceCategory() != null && !dto.getServiceCategory().trim().isEmpty()) {
-            ServiceCategory category = serviceCategoryRepository.findByCategoryNameIgnoreCase(dto.getServiceCategory().trim()).orElse(null);
-            if (category != null) {
-                request.setCategory(category);
-            }
-        }
+        // Rule 5: Once a job is posted, its service category is fixed and cannot be changed.
+        // Existing category on 'request' is strictly preserved.
 
         // Update Title if provided
         String title = dto.getResolvedTitle();

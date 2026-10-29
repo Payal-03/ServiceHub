@@ -44,8 +44,13 @@ public class ServiceRequestController {
 
     /**
      * Customer updates their posted job (only if OPEN and no electrician selected).
+     * Accepts PUT, PATCH, and POST methods on /{id}, /{id}/update, and /{id}/edit
+     * for complete compatibility across environments.
      */
-    @PutMapping("/{id}")
+    @RequestMapping(
+            value = {"/{id}", "/{id}/update", "/{id}/edit"},
+            method = {RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.POST}
+    )
     public ResponseEntity<ServiceRequestDto> updateRequest(
             @PathVariable Long id,
             @Valid @RequestBody UpdateRequestDto dto,
@@ -95,7 +100,6 @@ public class ServiceRequestController {
         );
         return ResponseEntity.ok(requests);
     }
-
 
     /**
      * View one service request by ID.

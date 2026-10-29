@@ -163,6 +163,7 @@ The database schema strictly conforms to the 7-table ER model:
 | Method | Endpoint | Description | Access |
 |---|---|---|---|
 | `POST` | `/api/requests` | Post a new electrical request (status: `OPEN`) | Customer |
+| `PUT` / `PATCH` | `/api/requests/{id}` | Edit open job details (title, description, budget, address; category is locked once posted) | Customer Owner |
 | `GET` | `/api/requests/my` | View all jobs posted by current customer / electrician | Authenticated |
 | `GET` | `/api/requests/available` | Browse `OPEN` requests (filter by `city`, `locality`) | Public / Electrician |
 | `GET` | `/api/requests/{id}` | View single request details and list of quoted bids | Authenticated |
