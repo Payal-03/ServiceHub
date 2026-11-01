@@ -165,7 +165,7 @@ public class InterestDto {
     }
 
     public Double getElectricianRating() {
-        return electricianRating;
+        return electricianRating != null ? electricianRating : 0.0;
     }
 
     public void setElectricianRating(Double electricianRating) {
@@ -174,7 +174,7 @@ public class InterestDto {
     }
 
     public Double getProviderRating() {
-        return providerRating != null ? providerRating : (electricianRating != null ? electricianRating : 5.0);
+        return providerRating != null ? providerRating : (electricianRating != null ? electricianRating : 0.0);
     }
 
     public void setProviderRating(Double providerRating) {

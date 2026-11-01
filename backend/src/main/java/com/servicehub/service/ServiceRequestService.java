@@ -502,7 +502,7 @@ public class ServiceRequestService {
                     req.getSelectedElectrician().getUser().getFullName(),
                     req.getSelectedElectrician().getUser().getPhone(),
                     req.getSelectedElectrician().getUser().getEmail(),
-                    avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 5.0,
+                    avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0,
                     req.getSelectedElectrician().getExperienceYears()
             );
             dto.setSelectedElectrician(summary);
@@ -548,7 +548,7 @@ public class ServiceRequestService {
         Double avg = ratingRepository.calculateAverageScoreByUserId(
                 interest.getElectrician().getUser().getUserId()
         );
-        dto.setElectricianRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 5.0);
+        dto.setElectricianRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
 
         dto.setBidAmount(interest.getBidAmount());
         dto.setStatus(interest.getStatus().name());

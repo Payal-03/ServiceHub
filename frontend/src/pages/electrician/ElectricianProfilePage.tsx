@@ -106,13 +106,12 @@ export const ElectricianProfilePage: React.FC = () => {
             <h1 className="text-2xl font-extrabold text-neutral-900">{profile.name}</h1>
             <p className="text-sm text-neutral-500">{profile.email} • {profile.phone}</p>
             <div className="flex items-center gap-3 mt-2 text-xs">
-              <span className="font-semibold text-neutral-800 flex items-center gap-1">
-                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                {profile.rating > 0 ? profile.rating.toFixed(1) : 'No ratings yet'}
-              </span>
-              <span className="text-neutral-400">
-                ({profile.ratingCount || 0} customer {profile.ratingCount === 1 ? 'review' : 'reviews'})
-              </span>
+              <StarRating
+                rating={profile.rating || 0}
+                size="sm"
+                showValue={true}
+                reviewCount={profile.ratingCount || 0}
+              />
             </div>
           </div>
         </div>

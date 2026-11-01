@@ -9,6 +9,7 @@ interface StarRatingProps {
   onChange?: (rating: number) => void;
   showValue?: boolean;
   reviewCount?: number;
+  zeroRatingText?: string;
 }
 
 export const StarRating: React.FC<StarRatingProps> = ({
@@ -19,6 +20,7 @@ export const StarRating: React.FC<StarRatingProps> = ({
   onChange,
   showValue = false,
   reviewCount,
+  zeroRatingText = '0.0 rating',
 }) => {
   const [hoverRating, setHoverRating] = useState<number | null>(null);
 
@@ -28,7 +30,8 @@ export const StarRating: React.FC<StarRatingProps> = ({
     lg: 'w-6 h-6',
   };
 
-  const currentVal = hoverRating !== null ? hoverRating : rating;
+  const safeRating = typeof rating === 'number' && !isNaN(rating) ? rating : 0;
+  const currentVal = hoverRating !== null ? hoverRating : safeRating;
 
   return (
     <div className="inline-flex items-center gap-1.5">
@@ -65,7 +68,7 @@ export const StarRating: React.FC<StarRatingProps> = ({
       </div>
       {showValue && (
         <span className="font-semibold text-neutral-800 text-sm ml-0.5">
-          {rating.toFixed(1)}
+          {safeRating > 0 ? safeRating.toFixed(1) : zeroRatingText}
         </span>
       )}
       {reviewCount !== undefined && (

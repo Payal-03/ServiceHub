@@ -69,7 +69,7 @@ class ServiceHubFlowTests {
         AuthResponse custAuth = authService.register(custReq);
         customerUserId = Long.valueOf(custAuth.getUser().getId());
 
-        // Register Electrician 1
+        // Register Electrician 1 (New electrician: verify initial rating is 0.0)
         RegisterRequest elec1Req = new RegisterRequest();
         elec1Req.setName("Ramesh Kumar");
         elec1Req.setEmail("ramesh@example.com");
@@ -80,8 +80,10 @@ class ServiceHubFlowTests {
         electrician1UserId = Long.valueOf(elec1Auth.getUser().getId());
         ElectricianProfileDto prof1 = electricianProfileService.getProfileByUserId(electrician1UserId);
         electrician1Id = Long.valueOf(prof1.getId());
+        assertEquals(0.0, prof1.getRating(), "Newly registered electrician must have 0.0 initial rating");
+        assertEquals(0L, prof1.getRatingCount(), "Newly registered electrician must have 0 initial rating count");
 
-        // Register Electrician 2
+        // Register Electrician 2 (New electrician: verify initial rating is 0.0)
         RegisterRequest elec2Req = new RegisterRequest();
         elec2Req.setName("Suresh Verma");
         elec2Req.setEmail("suresh@example.com");
@@ -92,6 +94,8 @@ class ServiceHubFlowTests {
         electrician2UserId = Long.valueOf(elec2Auth.getUser().getId());
         ElectricianProfileDto prof2 = electricianProfileService.getProfileByUserId(electrician2UserId);
         electrician2Id = Long.valueOf(prof2.getId());
+        assertEquals(0.0, prof2.getRating(), "Newly registered electrician must have 0.0 initial rating");
+        assertEquals(0L, prof2.getRatingCount(), "Newly registered electrician must have 0 initial rating count");
     }
 
     @Test
@@ -130,14 +134,21 @@ class ServiceHubFlowTests {
         interest2Dto.setMessage("Experienced technician available today.");
         serviceRequestService.expressInterest(reqId, interest2Dto, electrician2UserId);
 
-        // Verify customer sees 2 interested electricians
+        // Verify customer sees 2 interested electricians, each showing 0.0 rating initially
         ServiceRequestDto reqWithInterests = serviceRequestService.getRequestById(reqId);
         assertEquals(2, reqWithInterests.getInterestedProviders().size());
+        assertEquals(0.0, reqWithInterests.getInterestedProviders().get(0).getElectricianRating(),
+                "Electrician rating in bids must be 0.0 when newly registered");
+        assertEquals(0.0, reqWithInterests.getInterestedProviders().get(1).getElectricianRating(),
+                "Electrician rating in bids must be 0.0 when newly registered");
 
         // 5. Customer selects Electrician 1
         ServiceRequestDto selectedReq = serviceRequestService.selectElectrician(reqId, electrician1Id, customerUserId);
         assertEquals("IN_PROGRESS", selectedReq.getStatus());
         assertEquals(String.valueOf(electrician1Id), selectedReq.getSelectedElectricianId());
+        assertNotNull(selectedReq.getSelectedElectrician());
+        assertEquals(0.0, selectedReq.getSelectedElectrician().getRating(),
+                "Selected electrician rating must be 0.0 before customer ratings exist");
 
         // Verify Electrician 1 is SELECTED, Electrician 2 is NOT_SELECTED
         ServiceRequestDto reqAfterSelect = serviceRequestService.getRequestById(reqId);
@@ -179,10 +190,20 @@ class ServiceHubFlowTests {
         RatingDto r2 = ratingService.createRating(elecRating, electrician1UserId);
         assertEquals(5, r2.getScore());
 
-        // Verify Electrician 1 profile average rating
+        // Verify Electrician 1 profile average rating is updated to 5.0
         ElectricianProfileDto updatedProf = electricianProfileService.getProfileByElectricianId(electrician1Id);
-        assertEquals(5.0, updatedProf.getRating());
+        assertEquals(5.0, updatedProf.getRating(), "Electrician rating must now reflect actual customer rating (5.0)");
         assertEquals(1L, updatedProf.getRatingCount());
+
+        // Verify request's selected electrician now reflects 5.0
+        ServiceRequestDto reqAfterRating = serviceRequestService.getRequestById(reqId);
+        assertEquals(5.0, reqAfterRating.getSelectedElectrician().getRating(),
+                "Selected electrician rating must reflect 5.0 once rated");
+
+        // Verify Electrician 2 (who was not rated) is STILL at 0.0 rating
+        ElectricianProfileDto prof2After = electricianProfileService.getProfileByElectricianId(electrician2Id);
+        assertEquals(0.0, prof2After.getRating(), "Unrated electrician must remain at 0.0 rating");
+        assertEquals(0L, prof2After.getRatingCount());
     }
 
     @Test

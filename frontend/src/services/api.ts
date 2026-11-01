@@ -201,6 +201,13 @@ export const ratingApi = {
     return res.data;
   },
 
+  checkHasRated: async (requestId: number | string): Promise<boolean> => {
+    const res = await apiClient.get<{ hasRated: boolean }>('/ratings/check', {
+      params: { requestId },
+    });
+    return res.data.hasRated;
+  },
+
   getMyRatings: async (): Promise<{
     ratings: Rating[];
     averageScore: number | null;

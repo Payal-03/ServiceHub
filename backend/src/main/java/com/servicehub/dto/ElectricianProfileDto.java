@@ -117,7 +117,7 @@ public class ElectricianProfileDto {
     }
 
     public Double getRating() {
-        return rating != null ? rating : 5.0;
+        return rating != null ? rating : 0.0;
     }
 
     public void setRating(Double rating) {

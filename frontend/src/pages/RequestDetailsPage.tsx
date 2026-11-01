@@ -7,7 +7,6 @@ import {
   Clock,
   Phone,
   User,
-  Star,
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
@@ -57,6 +56,11 @@ export const RequestDetailsPage: React.FC = () => {
   const [reviewText, setReviewText] = useState('');
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
+  // Reset rating state when navigating to a different request
+  useEffect(() => {
+    setRatingSubmitted(false);
+  }, [id]);
+
   const fetchRequest = async () => {
     if (!id) return;
     setIsLoading(true);
@@ -78,6 +82,14 @@ export const RequestDetailsPage: React.FC = () => {
   useEffect(() => {
     fetchRequest();
   }, [id]);
+
+  // When a completed request loads, check server to see if current user already rated
+  useEffect(() => {
+    if (!id || !request || request.status !== 'COMPLETED') return;
+    ratingApi.checkHasRated(id)
+      .then((hasRated) => { if (hasRated) setRatingSubmitted(true); })
+      .catch(() => { /* silently ignore — form will still show; backend blocks duplicate */ });
+  }, [id, request?.status]);
 
   // Cancel Request (Customer)
   const handleCancel = async () => {
@@ -409,17 +421,19 @@ export const RequestDetailsPage: React.FC = () => {
               <div>
                 <span className="text-xs font-semibold text-neutral-400 uppercase">Assigned Electrician</span>
                 <p className="font-bold text-neutral-900 text-base">{request.selectedElectrician.name}</p>
-                <p className="text-xs text-neutral-500 flex items-center gap-2 mt-0.5">
-                  <span className="flex items-center gap-1 text-amber-600 font-semibold">
-                    <Star className="w-3.5 h-3.5 fill-current" /> {request.selectedElectrician.rating?.toFixed(1) || '5.0'}
-                  </span>
+                <div className="text-xs text-neutral-500 flex flex-wrap items-center gap-2 mt-1">
+                  <StarRating
+                    rating={request.selectedElectrician.rating ?? 0}
+                    size="sm"
+                    showValue={true}
+                  />
                   <span>•</span>
                   <span>{request.selectedElectrician.experienceYears} yrs experience</span>
                   <span>•</span>
                   <span className="flex items-center gap-1 text-neutral-700">
                     <Phone className="w-3 h-3" /> {request.selectedElectrician.phone}
                   </span>
-                </p>
+                </div>
               </div>
             </div>
           )}
@@ -623,6 +637,7 @@ export const RequestDetailsPage: React.FC = () => {
           </div>
 
           {request.interestedProviders && request.interestedProviders.length > 0 ? (
+
             <div className="space-y-4">
               {request.interestedProviders.map((bid) => {
                 const cleanPhone = (bid.electricianPhone || '').replace(/\D/g, '');
@@ -649,10 +664,11 @@ export const RequestDetailsPage: React.FC = () => {
                             <span className="font-bold text-base text-neutral-900">
                               {bid.electricianName}
                             </span>
-                            <span className="flex items-center gap-0.5 text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                              <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                              {bid.electricianRating > 0 ? bid.electricianRating.toFixed(1) : 'New'}
-                            </span>
+                            <StarRating
+                              rating={bid.electricianRating ?? 0}
+                              size="sm"
+                              showValue={true}
+                            />
                           </div>
                           <div className="flex items-center gap-2 text-xs text-neutral-500 mt-0.5">
                             <span>{bid.electricianExperienceYears} yrs experience</span>
@@ -679,6 +695,7 @@ export const RequestDetailsPage: React.FC = () => {
                           {bid.bidAmount}
                         </span>
                       </div>
+
                     </div>
 
                     {/* Application Message */}

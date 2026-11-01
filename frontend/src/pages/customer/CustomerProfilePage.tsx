@@ -123,10 +123,6 @@ export const CustomerProfilePage: React.FC = () => {
               <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">
                 {profile.fullName || user?.name || 'Customer'}
               </h1>
-              <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-primary-50 text-primary-700 border border-primary-200 flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-primary-600" />
-                Verified Customer
-              </span>
             </div>
 
             <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs sm:text-sm text-neutral-500 pt-0.5">

@@ -62,7 +62,7 @@ public class ServiceRequestDto {
             this.name = name;
             this.phone = phone;
             this.email = email;
-            this.rating = rating != null ? rating : 5.0;
+            this.rating = rating != null ? rating : 0.0;
             this.experienceYears = experienceYears;
         }
 

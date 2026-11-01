@@ -107,7 +107,7 @@ public class ElectricianProfileService {
         if (avgRating != null) {
             dto.setRating(Math.round(avgRating * 10.0) / 10.0);
         } else {
-            dto.setRating(5.0);
+            dto.setRating(0.0);
         }
         dto.setRatingCount(ratingCount);
         dto.setJobCount(ratingCount);

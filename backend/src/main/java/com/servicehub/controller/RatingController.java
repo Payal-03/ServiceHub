@@ -40,6 +40,23 @@ public class RatingController {
     }
 
     /**
+     * Check whether the authenticated user has already submitted a rating
+     * for a given request. Returns {"hasRated": true/false}.
+     */
+    @GetMapping("/api/ratings/check")
+    public ResponseEntity<java.util.Map<String, Boolean>> hasRated(
+            @RequestParam Long requestId,
+            Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user = authService.getUserByEmail(principal.getName());
+        boolean hasRated = ratingRepository
+                .existsByRequest_RequestIdAndReviewerUser_UserId(requestId, user.getUserId());
+        return ResponseEntity.ok(java.util.Map.of("hasRated", hasRated));
+    }
+
+    /**
      * Get all ratings received by the currently authenticated user.
      * Returns a map with: ratings (list), averageScore, totalCount, userName.
      */
