@@ -28,6 +28,7 @@ import { Badge } from '../components/ui/Badge';
 import { StarRating } from '../components/ui/StarRating';
 import { ElectricianProfileModal } from '../components/common/ElectricianProfileModal';
 import { EditJobModal } from '../components/common/EditJobModal';
+import { RequestLifecycleTracker } from '../components/common/RequestLifecycleTracker';
 
 export const RequestDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -273,6 +274,9 @@ export const RequestDetailsPage: React.FC = () => {
       >
         <ArrowLeft className="w-4 h-4" /> Back to List
       </button>
+
+      {/* Request Lifecycle Tracker (4 Stages: Open -> Electrician Selected -> Work In Progress -> Work Completed) */}
+      <RequestLifecycleTracker request={request} />
 
       {/* Main Request Card */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-neutral-200 shadow-sm space-y-6">
