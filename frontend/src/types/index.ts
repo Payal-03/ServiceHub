@@ -73,6 +73,7 @@ export interface ServiceRequest {
   id: string;
   requestNumber: string;
   customerId: string;
+  customerUserId?: string;  // User.userId of the customer (for ownership check)
   customerName: string;
   customerPhone: string;
   customerEmail: string;

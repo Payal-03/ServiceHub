@@ -467,6 +467,7 @@ public class ServiceRequestService {
         if (req.getCustomer() != null) {
             dto.setCustomerId(String.valueOf(req.getCustomer().getCustomerId()));
             if (req.getCustomer().getUser() != null) {
+                dto.setCustomerUserId(String.valueOf(req.getCustomer().getUser().getUserId()));
                 dto.setCustomerName(req.getCustomer().getUser().getFullName());
                 dto.setCustomerPhone(req.getCustomer().getUser().getPhone());
                 dto.setCustomerEmail(req.getCustomer().getUser().getEmail());

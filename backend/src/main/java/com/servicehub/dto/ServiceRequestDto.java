@@ -10,6 +10,7 @@ public class ServiceRequestDto {
     private String id;
     private String requestNumber;
     private String customerId;
+    private String customerUserId;  // The User.userId of the customer (for frontend ownership check)
     private String customerName;
     private String customerPhone;
     private String customerEmail;
@@ -141,6 +142,13 @@ public class ServiceRequestDto {
 
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
+    }
+    public String getCustomerUserId() {
+        return customerUserId;
+    }
+
+    public void setCustomerUserId(String customerUserId) {
+        this.customerUserId = customerUserId;
     }
 
     public String getCustomerName() {

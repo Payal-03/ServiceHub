@@ -230,7 +230,12 @@ export const RequestDetailsPage: React.FC = () => {
     );
   }
 
-  const isCustomerOwner = user && String(user.id) === String(request.customerId);
+  // Compare using customerUserId (the User.userId) so it matches user.id from auth.
+  // Falls back to email comparison for backward-compatibility with older cached data.
+  const isCustomerOwner = user && (
+    (request.customerUserId && String(user.id) === String(request.customerUserId)) ||
+    (!request.customerUserId && user.email === request.customerEmail)
+  );
   // Match by email because user.id is the userId but interest.electricianId
   // is the electrician_profile id — they are different numbers.
   const myExistingBid = request.interestedProviders?.find(
