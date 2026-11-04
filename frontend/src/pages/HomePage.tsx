@@ -87,7 +87,7 @@ export const HomePage: React.FC = () => {
             <Button
               variant="outline"
               size="lg"
-              className="text-white border-neutral-600 bg-neutral-800"
+              className="!bg-neutral-800 !text-white !border-neutral-600 hover:!bg-neutral-800 hover:!text-white hover:!border-neutral-600 shadow-none"
               onClick={() => navigate('/electrician/jobs')}
             >
               Browse Open Jobs
