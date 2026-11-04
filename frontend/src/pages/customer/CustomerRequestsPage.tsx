@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { PlusCircle, Clock, MapPin, IndianRupee, Users, AlertCircle, CheckCircle2, ChevronRight, Lock, Edit3 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { PlusCircle, MapPin, IndianRupee, Users, AlertCircle, CheckCircle2, ChevronRight, Lock, Edit3 } from 'lucide-react';
 import { requestApi } from '../../services/api';
 import { ServiceRequest, RequestStatus } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
+import { EditJobModal } from '../../components/common/EditJobModal';
 
 export const CustomerRequestsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -12,6 +13,9 @@ export const CustomerRequestsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'ALL' | RequestStatus>('ALL');
+
+  // Edit modal state
+  const [editingRequest, setEditingRequest] = useState<ServiceRequest | null>(null);
 
   const fetchRequests = async () => {
     setIsLoading(true);
@@ -152,9 +156,22 @@ export const CustomerRequestsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-end sm:border-l sm:border-neutral-100 sm:pl-4">
+              {/* Right-side actions */}
+              <div className="flex items-center gap-3 sm:border-l sm:border-neutral-100 sm:pl-4">
+                {req.status === 'OPEN' && !req.selectedElectricianId && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingRequest(req);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-200 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" /> Edit
+                  </button>
+                )}
                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600">
-                  {req.status === 'OPEN' && !req.selectedElectricianId ? 'View / Edit' : 'View Details'} <ChevronRight className="w-4 h-4" />
+                  View <ChevronRight className="w-4 h-4" />
                 </span>
               </div>
             </div>
@@ -179,6 +196,21 @@ export const CustomerRequestsPage: React.FC = () => {
             Post a Job
           </Button>
         </div>
+      )}
+
+      {/* Inline Edit Modal — triggered directly from list */}
+      {editingRequest && (
+        <EditJobModal
+          isOpen={Boolean(editingRequest)}
+          onClose={() => setEditingRequest(null)}
+          request={editingRequest}
+          onJobUpdated={(updated) => {
+            setRequests((prev) =>
+              prev.map((r) => (r.id === updated.id ? updated : r))
+            );
+            setEditingRequest(null);
+          }}
+        />
       )}
     </div>
   );

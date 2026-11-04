@@ -324,6 +324,22 @@ public class ServiceRequestService {
 
         requestInterestRepository.save(interest);
 
+        // Notify the customer that an electrician has bid on their request
+        if (request.getCustomer() != null && request.getCustomer().getUser() != null) {
+            User customerUser = request.getCustomer().getUser();
+            String electricianName = electrician.getUser() != null ? electrician.getUser().getFullName() : "An electrician";
+            notificationService.createNotification(
+                    customerUser,
+                    request,
+                    "New Bid Received: " + request.getTitle(),
+                    String.format("%s has submitted a quote of \u20b9%s for your job \"%s\". View their profile and choose the best electrician.",
+                            electricianName,
+                            bidAmount.stripTrailingZeros().toPlainString(),
+                            request.getTitle()),
+                    "NEW_BID"
+            );
+        }
+
         return mapToDto(request);
     }
 
@@ -402,6 +418,24 @@ public class ServiceRequestService {
                 interest.setStatus(InterestStatus.NOT_SELECTED);
             }
             requestInterestRepository.save(interest);
+        }
+
+        // Notify the selected electrician that they were chosen
+        if (electrician.getUser() != null) {
+            User electricianUser = electrician.getUser();
+            String customerName = request.getCustomer() != null && request.getCustomer().getUser() != null
+                    ? request.getCustomer().getUser().getFullName() : "The customer";
+            notificationService.createNotification(
+                    electricianUser,
+                    request,
+                    "You Were Selected! \u2014 " + request.getTitle(),
+                    String.format("%s has selected you for the job \"%s\" in %s, %s. The job is now In Progress. Please contact the customer to proceed.",
+                            customerName,
+                            request.getTitle(),
+                            request.getLocality(),
+                            request.getCity()),
+                    "ELECTRICIAN_SELECTED"
+            );
         }
 
         return mapToDto(request);
