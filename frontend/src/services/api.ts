@@ -163,25 +163,8 @@ export const requestApi = {
     id: string | number,
     data: UpdateRequestInput
   ): Promise<ServiceRequest> => {
-    try {
-      const res = await apiClient.put<ServiceRequest>(`/requests/${id}`, data);
-      return res.data;
-    } catch (err: any) {
-      // If PUT is not supported (405 Method Not Allowed), retry with PATCH
-      if (err.response?.status === 405) {
-        try {
-          const patchRes = await apiClient.patch<ServiceRequest>(`/requests/${id}`, data);
-          return patchRes.data;
-        } catch (patchErr: any) {
-          if (patchErr.response?.status === 405) {
-            const postRes = await apiClient.post<ServiceRequest>(`/requests/${id}/update`, data);
-            return postRes.data;
-          }
-          throw patchErr;
-        }
-      }
-      throw err;
-    }
+    const res = await apiClient.put<ServiceRequest>(`/requests/${id}`, data);
+    return res.data;
   },
 };
 

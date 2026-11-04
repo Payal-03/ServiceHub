@@ -46,6 +46,8 @@ export const CustomerRequestsPage: React.FC = () => {
         return <Badge variant="secondary">Completed</Badge>;
       case 'CANCELLED':
         return <Badge variant="neutral">Cancelled</Badge>;
+      case 'EXPIRED':
+        return <Badge variant="neutral">Expired</Badge>;
       default:
         return <Badge variant="neutral">{status}</Badge>;
     }
@@ -70,7 +72,7 @@ export const CustomerRequestsPage: React.FC = () => {
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-neutral-200 pb-3 overflow-x-auto text-sm">
-        {(['ALL', 'OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] as const).map((tab) => (
+        {(['ALL', 'OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'EXPIRED'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setFilter(tab)}

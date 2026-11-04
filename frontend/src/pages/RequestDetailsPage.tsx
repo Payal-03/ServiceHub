@@ -257,6 +257,8 @@ export const RequestDetailsPage: React.FC = () => {
         return <Badge variant="secondary">Completed</Badge>;
       case 'CANCELLED':
         return <Badge variant="neutral">Cancelled</Badge>;
+      case 'EXPIRED':
+        return <Badge variant="neutral">Expired</Badge>;
       default:
         return <Badge variant="neutral">{status}</Badge>;
     }

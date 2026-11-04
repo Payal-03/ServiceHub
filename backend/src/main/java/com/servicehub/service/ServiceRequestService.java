@@ -88,6 +88,7 @@ public class ServiceRequestService {
         request.setAddress(dto.getResolvedAddress());
         request.setExpectedBudget(budget);
         request.setStatus(RequestStatus.OPEN);
+        request.setExpiresAt(LocalDateTime.now().plusDays(7));
         request.setCustomerConfirmed(false);
         request.setElectricianConfirmed(false);
 
@@ -124,7 +125,6 @@ public class ServiceRequestService {
         }
 
         // Rule 5: Once a job is posted, its service category is fixed and cannot be changed.
-        // Existing category on 'request' is strictly preserved.
 
         // Update Title if provided
         String title = dto.getResolvedTitle();
@@ -273,7 +273,10 @@ public class ServiceRequestService {
                 maxPrice
         );
 
-        return requests.stream().map(this::mapToDto).collect(Collectors.toList());
+        return requests.stream()
+                .map(this::mapToDto)
+                .filter(r -> "OPEN".equals(r.getStatus()))
+                .collect(Collectors.toList());
     }
 
     public List<ServiceRequestDto> browseOpenRequests(String city, String locality) {
@@ -479,20 +482,27 @@ public class ServiceRequestService {
             dto.setServiceCategory(req.getCategory().getCategoryName());
         }
 
+        // Auto-expire OPEN jobs past expiresAt (default 7 days) if no electrician was selected
+        if (req.getStatus() == RequestStatus.OPEN && req.getSelectedElectrician() == null) {
+            LocalDateTime expiry = req.getExpiresAt() != null ? req.getExpiresAt() : (req.getCreatedAt() != null ? req.getCreatedAt().plusDays(7) : null);
+            if (expiry != null && LocalDateTime.now().isAfter(expiry)) {
+                req.setStatus(RequestStatus.EXPIRED);
+                serviceRequestRepository.save(req);
+            }
+        }
+
         dto.setTitle(req.getTitle());
-        dto.setServiceType(req.getTitle());
         dto.setDescription(req.getDescription());
         dto.setCity(req.getCity());
         dto.setLocality(req.getLocality());
         dto.setAddress(req.getAddress());
-        dto.setAddressDetails(req.getAddress());
+
         dto.setBudget(req.getExpectedBudget());
         dto.setExpectedBudget(req.getExpectedBudget());
         dto.setStatus(req.getStatus().name());
 
         if (req.getSelectedElectrician() != null) {
             dto.setSelectedElectricianId(String.valueOf(req.getSelectedElectrician().getElectricianId()));
-            dto.setAcceptedProviderId(String.valueOf(req.getSelectedElectrician().getElectricianId()));
 
             Double avgRating = ratingRepository.calculateAverageScoreByUserId(
                     req.getSelectedElectrician().getUser().getUserId()
@@ -507,12 +517,10 @@ public class ServiceRequestService {
                     req.getSelectedElectrician().getExperienceYears()
             );
             dto.setSelectedElectrician(summary);
-            dto.setAcceptedProvider(summary);
         }
 
         dto.setCustomerConfirmed(Boolean.TRUE.equals(req.getCustomerConfirmed()));
         dto.setElectricianConfirmed(Boolean.TRUE.equals(req.getElectricianConfirmed()));
-        dto.setProviderCompleted(Boolean.TRUE.equals(req.getElectricianConfirmed()));
 
         // Populate interests
         List<RequestInterest> interests = requestInterestRepository

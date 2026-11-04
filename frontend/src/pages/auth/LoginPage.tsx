@@ -47,16 +47,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const fillDemoAccount = (role: 'CUSTOMER' | 'ELECTRICIAN') => {
-    if (role === 'CUSTOMER') {
-      setEmail('customer@servicehub.com');
-      setPassword('password123');
-    } else {
-      setEmail('electrician@servicehub.com');
-      setPassword('password123');
-    }
-  };
-
   return (
     <div className="min-h-[75vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -130,29 +120,6 @@ export const LoginPage: React.FC = () => {
               Sign In
             </Button>
           </form>
-
-          {/* Quick Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-neutral-100">
-            <p className="text-xs text-neutral-500 text-center mb-3 font-medium">
-              Quick Test Accounts (Click to Fill):
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('CUSTOMER')}
-                className="py-1.5 px-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-700 transition-colors"
-              >
-                Customer Demo
-              </button>
-              <button
-                type="button"
-                onClick={() => fillDemoAccount('ELECTRICIAN')}
-                className="py-1.5 px-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl text-xs font-semibold text-neutral-700 transition-colors"
-              >
-                Electrician Demo
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

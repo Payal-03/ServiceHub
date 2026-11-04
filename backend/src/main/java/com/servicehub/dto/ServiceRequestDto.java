@@ -19,27 +19,21 @@ public class ServiceRequestDto {
     private String serviceCategoryId;
     private String serviceCategory;
     private String title;
-    private String serviceType; // Frontend alias for title
     private String description;
 
     private String city;
     private String locality;
     private String pincode;
     private String address;
-    private String addressDetails; // Frontend alias for address
 
-    private BigDecimal budget;
     private BigDecimal expectedBudget;
     private String status;
 
     private String selectedElectricianId;
-    private String acceptedProviderId; // Frontend alias
     private ElectricianSummaryDto selectedElectrician;
-    private ElectricianSummaryDto acceptedProvider; // Frontend alias
 
     private Boolean customerConfirmed;
     private Boolean electricianConfirmed;
-    private Boolean providerCompleted; // Frontend alias for electricianConfirmed
 
     private int interestedCount;
     private List<InterestDto> interestedProviders = new ArrayList<>();
@@ -119,7 +113,6 @@ public class ServiceRequestDto {
     public ServiceRequestDto() {
     }
 
-    // Getters and Setters
     public String getId() {
         return id;
     }
@@ -205,18 +198,6 @@ public class ServiceRequestDto {
 
     public void setTitle(String title) {
         this.title = title;
-        this.serviceType = title;
-    }
-
-    public String getServiceType() {
-        return serviceType != null ? serviceType : title;
-    }
-
-    public void setServiceType(String serviceType) {
-        this.serviceType = serviceType;
-        if (this.title == null) {
-            this.title = serviceType;
-        }
     }
 
     public String getDescription() {
@@ -257,27 +238,6 @@ public class ServiceRequestDto {
 
     public void setAddress(String address) {
         this.address = address;
-        this.addressDetails = address;
-    }
-
-    public String getAddressDetails() {
-        return addressDetails != null ? addressDetails : address;
-    }
-
-    public void setAddressDetails(String addressDetails) {
-        this.addressDetails = addressDetails;
-        if (this.address == null) {
-            this.address = addressDetails;
-        }
-    }
-
-    public BigDecimal getBudget() {
-        return budget != null ? budget : expectedBudget;
-    }
-
-    public void setBudget(BigDecimal budget) {
-        this.budget = budget;
-        this.expectedBudget = budget;
     }
 
     public BigDecimal getExpectedBudget() {
@@ -286,7 +246,15 @@ public class ServiceRequestDto {
 
     public void setExpectedBudget(BigDecimal expectedBudget) {
         this.expectedBudget = expectedBudget;
-        this.budget = expectedBudget;
+    }
+
+    // Retain getBudget/setBudget as direct delegators to expectedBudget for JSON compatibility
+    public BigDecimal getBudget() {
+        return expectedBudget;
+    }
+
+    public void setBudget(BigDecimal budget) {
+        this.expectedBudget = budget;
     }
 
     public String getStatus() {
@@ -303,18 +271,6 @@ public class ServiceRequestDto {
 
     public void setSelectedElectricianId(String selectedElectricianId) {
         this.selectedElectricianId = selectedElectricianId;
-        this.acceptedProviderId = selectedElectricianId;
-    }
-
-    public String getAcceptedProviderId() {
-        return acceptedProviderId != null ? acceptedProviderId : selectedElectricianId;
-    }
-
-    public void setAcceptedProviderId(String acceptedProviderId) {
-        this.acceptedProviderId = acceptedProviderId;
-        if (this.selectedElectricianId == null) {
-            this.selectedElectricianId = acceptedProviderId;
-        }
     }
 
     public ElectricianSummaryDto getSelectedElectrician() {
@@ -323,18 +279,6 @@ public class ServiceRequestDto {
 
     public void setSelectedElectrician(ElectricianSummaryDto selectedElectrician) {
         this.selectedElectrician = selectedElectrician;
-        this.acceptedProvider = selectedElectrician;
-    }
-
-    public ElectricianSummaryDto getAcceptedProvider() {
-        return acceptedProvider != null ? acceptedProvider : selectedElectrician;
-    }
-
-    public void setAcceptedProvider(ElectricianSummaryDto acceptedProvider) {
-        this.acceptedProvider = acceptedProvider;
-        if (this.selectedElectrician == null) {
-            this.selectedElectrician = acceptedProvider;
-        }
     }
 
     public Boolean getCustomerConfirmed() {
@@ -351,15 +295,6 @@ public class ServiceRequestDto {
 
     public void setElectricianConfirmed(Boolean electricianConfirmed) {
         this.electricianConfirmed = electricianConfirmed;
-        this.providerCompleted = electricianConfirmed;
-    }
-
-    public Boolean getProviderCompleted() {
-        return providerCompleted != null ? providerCompleted : electricianConfirmed;
-    }
-
-    public void setProviderCompleted(Boolean providerCompleted) {
-        this.providerCompleted = providerCompleted;
     }
 
     public int getInterestedCount() {
