@@ -1,7 +1,15 @@
 package com.servicehub.service;
 
 import com.servicehub.dto.ElectricianProfileDto;
+import com.servicehub.dto.ElectricianWorkHistoryDto;
 import com.servicehub.dto.UpdateElectricianProfileDto;
+import com.servicehub.entity.Rating;
+import com.servicehub.entity.RequestStatus;
+import com.servicehub.entity.ServiceRequest;
+import com.servicehub.repository.ServiceRequestRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import com.servicehub.entity.ElectricianProfile;
 import com.servicehub.entity.User;
 import com.servicehub.exception.BadRequestException;
@@ -18,13 +26,16 @@ public class ElectricianProfileService {
     private final ElectricianProfileRepository electricianProfileRepository;
     private final RatingRepository ratingRepository;
     private final UserRepository userRepository;
+    private final ServiceRequestRepository serviceRequestRepository;
 
     public ElectricianProfileService(ElectricianProfileRepository electricianProfileRepository,
                                      RatingRepository ratingRepository,
-                                     UserRepository userRepository) {
+                                     UserRepository userRepository,
+                                     ServiceRequestRepository serviceRequestRepository) {
         this.electricianProfileRepository = electricianProfileRepository;
         this.ratingRepository = ratingRepository;
         this.userRepository = userRepository;
+        this.serviceRequestRepository = serviceRequestRepository;
     }
 
     public ElectricianProfileDto getProfileByUserId(Long userId) {
@@ -110,8 +121,61 @@ public class ElectricianProfileService {
             dto.setRating(0.0);
         }
         dto.setRatingCount(ratingCount);
-        dto.setJobCount(ratingCount);
+        long completedJobsCount = serviceRequestRepository.countBySelectedElectrician_ElectricianIdAndStatus(profile.getElectricianId(), RequestStatus.COMPLETED);
+        dto.setJobCount(completedJobsCount);
 
         return dto;
+    }
+
+    public List<ElectricianWorkHistoryDto> getWorkHistory(Long electricianId) {
+        ElectricianProfile profile = electricianProfileRepository.findById(electricianId)
+                .orElseThrow(() -> new ResourceNotFoundException("Electrician profile not found for ID: " + electricianId));
+
+        List<ServiceRequest> completedRequests = serviceRequestRepository
+                .findBySelectedElectrician_ElectricianIdAndStatusOrderByCreatedAtDesc(electricianId, RequestStatus.COMPLETED);
+
+        Long electricianUserId = profile.getUser().getUserId();
+
+        return completedRequests.stream().map(req -> {
+            ElectricianWorkHistoryDto dto = new ElectricianWorkHistoryDto();
+            dto.setId(String.valueOf(req.getRequestId()));
+            dto.setRequestId(String.valueOf(req.getRequestId()));
+            dto.setRequestNumber("REQ-" + req.getRequestId());
+            dto.setTitle(req.getTitle());
+            if (req.getCategory() != null) {
+                dto.setServiceCategory(req.getCategory().getCategoryName());
+            }
+            dto.setDescription(req.getDescription());
+            dto.setCity(req.getCity());
+            dto.setLocality(req.getLocality());
+            dto.setBudget(req.getExpectedBudget());
+            dto.setStatus(req.getStatus().name());
+            if (req.getCustomer() != null && req.getCustomer().getUser() != null) {
+                dto.setCustomerName(req.getCustomer().getUser().getFullName());
+            }
+            dto.setCompletedAt(req.getUpdatedAt() != null ? req.getUpdatedAt() : req.getCreatedAt());
+            dto.setCreatedAt(req.getCreatedAt());
+
+            // Check if there is a customer review/rating for this request
+            List<Rating> ratings = ratingRepository.findByRequest_RequestId(req.getRequestId());
+            Optional<Rating> customerRating = ratings.stream()
+                    .filter(r -> r.getRevieweeUser() != null && r.getRevieweeUser().getUserId().equals(electricianUserId))
+                    .findFirst();
+
+            if (customerRating.isPresent()) {
+                Rating r = customerRating.get();
+                dto.setIsRated(true);
+                dto.setRatingScore(r.getScore() != null ? r.getScore().doubleValue() : null);
+                dto.setRatingReview(r.getReview());
+                dto.setRatedAt(r.getCreatedAt());
+                if (r.getReviewerUser() != null) {
+                    dto.setReviewerName(r.getReviewerUser().getFullName());
+                }
+            } else {
+                dto.setIsRated(false);
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

@@ -19,6 +19,10 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, 
 
     List<ServiceRequest> findBySelectedElectrician_ElectricianIdOrderByCreatedAtDesc(Long electricianId);
 
+    List<ServiceRequest> findBySelectedElectrician_ElectricianIdAndStatusOrderByCreatedAtDesc(Long electricianId, RequestStatus status);
+
+    long countBySelectedElectrician_ElectricianIdAndStatus(Long electricianId, RequestStatus status);
+
     List<ServiceRequest> findByStatusOrderByCreatedAtDesc(RequestStatus status);
 
     @Query("SELECT r FROM ServiceRequest r " +

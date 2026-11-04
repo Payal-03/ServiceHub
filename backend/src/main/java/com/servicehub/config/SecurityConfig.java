@@ -57,8 +57,8 @@ public class SecurityConfig {
                 // Public browsing endpoints
                 .requestMatchers(HttpMethod.GET, "/api/requests/available").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/requests/*").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/electricians/*").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/providers/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/electricians/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/providers/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/ratings/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/providers/*/reviews").permitAll()
 

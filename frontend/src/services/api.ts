@@ -4,6 +4,7 @@ import {
   Category,
   CustomerProfile,
   ElectricianProfile,
+  ElectricianWorkHistory,
   Notification,
   Rating,
   Role,
@@ -51,6 +52,11 @@ export const authApi = {
     const res = await apiClient.post<AuthResponse>('/auth/login', payload);
     return res.data;
   },
+
+  getWorkHistory: async (id: string | number): Promise<ElectricianWorkHistory[]> => {
+    const res = await apiClient.get<ElectricianWorkHistory[]>('/electricians/' + id + '/work-history');
+    return res.data;
+  },
 };
 
 // 2. Category API
@@ -63,6 +69,11 @@ export const categoryApi = {
 
 // 3. Electrician Profile API
 export const electricianApi = {
+  getWorkHistory: async (id: string | number): Promise<ElectricianWorkHistory[]> => {
+    const res = await apiClient.get<ElectricianWorkHistory[]>('/electricians/' + id + '/work-history');
+    return res.data;
+  },
+
   getMyProfile: async (): Promise<ElectricianProfile> => {
     const res = await apiClient.get<ElectricianProfile>('/electricians/me');
     return res.data;

@@ -1,6 +1,8 @@
 package com.servicehub.controller;
 
 import com.servicehub.dto.ElectricianProfileDto;
+import com.servicehub.dto.ElectricianWorkHistoryDto;
+import java.util.List;
 import com.servicehub.dto.UpdateElectricianProfileDto;
 import com.servicehub.entity.User;
 import com.servicehub.service.AuthService;
@@ -34,6 +36,12 @@ public class ElectricianProfileController {
     public ResponseEntity<ElectricianProfileDto> getProfileById(@PathVariable Long id) {
         ElectricianProfileDto profile = electricianProfileService.getProfileByElectricianId(id);
         return ResponseEntity.ok(profile);
+    }
+
+    @GetMapping({"/api/electricians/{id}/work-history", "/api/providers/{id}/work-history"})
+    public ResponseEntity<List<ElectricianWorkHistoryDto>> getWorkHistory(@PathVariable Long id) {
+        List<ElectricianWorkHistoryDto> history = electricianProfileService.getWorkHistory(id);
+        return ResponseEntity.ok(history);
     }
 
     @PutMapping({"/api/electricians/{id}", "/api/providers/{id}"})

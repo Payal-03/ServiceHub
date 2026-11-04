@@ -45,6 +45,27 @@ export interface ElectricianProfile {
   jobCount?: number;
 }
 
+export interface ElectricianWorkHistory {
+  id: string;
+  requestId: string;
+  requestNumber: string;
+  title: string;
+  serviceCategory?: string;
+  description: string;
+  city: string;
+  locality: string;
+  budget: number;
+  status: string;
+  customerName?: string;
+  completedAt?: string;
+  createdAt?: string;
+  ratingScore?: number;
+  ratingReview?: string;
+  reviewerName?: string;
+  ratedAt?: string;
+  isRated?: boolean;
+}
+
 export type RequestStatus = 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED';
 
 export type InterestStatus = 'INTERESTED' | 'SELECTED' | 'NOT_SELECTED' | 'WITHDRAWN';

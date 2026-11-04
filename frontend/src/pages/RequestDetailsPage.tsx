@@ -446,6 +446,30 @@ export const RequestDetailsPage: React.FC = () => {
                   </span>
                 </div>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setViewingElectrician({
+                    electricianId: Number(request.selectedElectrician!.id),
+                    electricianName: request.selectedElectrician!.name,
+                    electricianPhone: request.selectedElectrician!.phone,
+                    electricianEmail: (request.selectedElectrician as any).email,
+                    electricianRating: request.selectedElectrician!.rating ?? 0,
+                    electricianExperienceYears: request.selectedElectrician!.experienceYears ?? 0,
+                    bidAmount: request.budget,
+                    interestId: 0,
+                    requestId: Number(request.id),
+                    status: "SELECTED" as any,
+                    message: "",
+                    createdAt: "",
+                  });
+                }}
+                leftIcon={<User className="w-3.5 h-3.5" />}
+                className="text-neutral-700 hover:text-neutral-900 border-neutral-300 self-start sm:self-auto"
+              >
+                View Work History & Profile
+              </Button>
             </div>
           )}
 
